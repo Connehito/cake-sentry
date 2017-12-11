@@ -1,0 +1,36 @@
+{
+    "name": "connehito/cakephp3-sentry",
+    "description": "Sentry plugin for CakePHP3",
+    "type": "cakephp-plugin",
+    "require": {
+        "php": "^7.0",
+        "cakephp/cakephp": "~3.5",
+        "sentry/sentry": "^1.7"
+    },
+    "require-dev": {
+        "cakephp/cakephp-codesniffer": "^3.0",
+        "dereuromark/cakephp-ide-helper": "^0.10.3",
+        "phpunit/phpunit": "^6.4"
+    },
+    "license": "MIT",
+    "autoload": {
+        "psr-4": {
+            "Connehito\\CakeSentry\\": "src/"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "Connehito\\CakeSentry\\Test\\": "tests/"
+        }
+    },
+    "scripts": {
+        "test": "phpunit"
+    },
+    "authors": [
+        {
+            "name": "Hideki Kinjyo",
+            "email": "kinjyo@connehito.com",
+            "role": "Maintainer"
+        }
+    ]
+}
