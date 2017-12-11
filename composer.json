@@ -24,7 +24,8 @@
         }
     },
     "scripts": {
-        "test": "phpunit"
+        "test": "phpunit",
+        "cs-check": "phpcs --colors -p ./src"
     },
     "authors": [
         {
