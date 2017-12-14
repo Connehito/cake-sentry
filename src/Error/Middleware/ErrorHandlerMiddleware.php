@@ -16,12 +16,9 @@ class ErrorHandlerMiddleware extends BaseErrorHandlerMiddleware
             return;
         }
 
-        $skipLog = $this->getConfig('skipLog');
-        if ($skipLog) {
-            foreach ((array)$skipLog as $class) {
-                if ($exception instanceof $class) {
-                    return;
-                }
+        foreach ((array)$this->getConfig('skipLog') as $class) {
+            if ($exception instanceof $class) {
+                return;
             }
         }
 
