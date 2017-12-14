@@ -96,13 +96,13 @@ class Client
     /**
      * capture exception for sentry
      *
-     * @param int $level error level
+     * @param mixed $level error level
      * @param string $message error message
      * @param array $context subject
      *
      * @return void
      */
-    public function capture(string $level, string $message, array $context)
+    public function capture($level, string $message, array $context)
     {
         $event = new Event('CakeSentry.Client.beforeCapture', $this, $context);
         $data = (array)$this->getEventManager()->dispatch($event)->getResult();
