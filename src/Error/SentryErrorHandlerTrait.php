@@ -40,7 +40,7 @@ trait SentryErrorHandlerTrait
     }
 
     /**
-     * Handles exception logging
+     * Handles exception logging.
      *
      * @param \Exception $exception Exception instance.
      * @return bool

@@ -44,31 +44,7 @@ class Client
     }
 
     /**
-     * construct Raven_Client and inject config
-     *
-     * @return void
-     */
-    private function setupClient()
-    {
-        $config = (array)Configure::read('Sentry');
-        $dsn = Hash::get($config, 'dsn');
-        if (!$dsn) {
-            throw new InvalidArgumentException('Sentry DSN not provided.');
-        }
-        $options = (array)Hash::get($config, 'options');
-        if (!Hash::get($options, 'send_callback')) {
-            $options['send_callback'] = function () {
-                $event = new Event('CakeSentry.Client.afterCapture', $this, func_get_args());
-                $this->getEventManager()->dispatch($event)->getResult();
-            };
-        }
-        $raven = new Raven_Client($dsn, $options);
-
-        $this->raven = $raven;
-    }
-
-    /**
-     * set context RequestMessage
+     * Set context RequestMessage.
      *
      * @param null|\Psr\Http\Message\ServerRequestInterface $request if null, factory from global
      * @return void
@@ -84,7 +60,7 @@ class Client
     }
 
     /**
-     * set context RequestMessage
+     * Set context RequestMessage.
      *
      * @return null|\Psr\Http\Message\ServerRequestInterface contextual request
      */
@@ -94,7 +70,7 @@ class Client
     }
 
     /**
-     * capture exception for sentry
+     * Capture exception for sentry.
      *
      * @param mixed $level error level
      * @param string $message error message
@@ -137,7 +113,7 @@ class Client
     }
 
     /**
-     * accessor for Raven_Client instance.
+     * Accessor for Raven_Client instance.
      *
      * @return Raven_Client
      */
@@ -147,8 +123,32 @@ class Client
     }
 
     /**
-     * detect Http request or not.
-     * (delegate Raven_Client private logic.)
+     * Construct Raven_Client and inject config.
+     *
+     * @return void
+     */
+    private function setupClient()
+    {
+        $config = (array)Configure::read('Sentry');
+        $dsn = Hash::get($config, 'dsn');
+        if (!$dsn) {
+            throw new InvalidArgumentException('Sentry DSN not provided.');
+        }
+        $options = (array)Hash::get($config, 'options');
+        if (!Hash::get($options, 'send_callback')) {
+            $options['send_callback'] = function () {
+                $event = new Event('CakeSentry.Client.afterCapture', $this, func_get_args());
+                $this->getEventManager()->dispatch($event)->getResult();
+            };
+        }
+        $raven = new Raven_Client($dsn, $options);
+
+        $this->raven = $raven;
+    }
+
+    /**
+     * Detect Http request or not.
+     * (Delegate Raven_Client private logic.)
      *
      * @return bool
      */
