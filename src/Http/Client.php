@@ -25,14 +25,14 @@ class Client
     /* @var \Raven_Client */
     protected $raven;
 
-    /* @var \Psr\Http\Message\ServerRequestInterface */
+    /* @var ServerRequestInterface */
     protected $request;
 
     /**
      * Client constructor.
      *
      * @param array $config config for uses Sentry
-     * @param \Psr\Http\Message\ServerRequestInterface $request request context message
+     * @param ServerRequestInterface $request request context message
      */
     public function __construct(array $config, ServerRequestInterface $request = null)
     {
@@ -46,7 +46,7 @@ class Client
     /**
      * Set context RequestMessage.
      *
-     * @param null|\Psr\Http\Message\ServerRequestInterface $request if null, factory from global
+     * @param null|ServerRequestInterface $request if null, factory from global
      * @return void
      */
     protected function setRequest($request)
@@ -62,7 +62,7 @@ class Client
     /**
      * Set context RequestMessage.
      *
-     * @return null|\Psr\Http\Message\ServerRequestInterface contextual request
+     * @return null|ServerRequestInterface contextual request
      */
     public function getRequest()
     {

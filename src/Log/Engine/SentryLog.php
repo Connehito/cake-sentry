@@ -7,7 +7,7 @@ use Connehito\CakeSentry\Http\Client;
 
 class SentryLog extends BaseLog
 {
-    /* @var \Connehito\CakeSentry\Http\Client */
+    /* @var Client */
     protected $client;
 
     /**

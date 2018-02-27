@@ -5,6 +5,7 @@ namespace Connehito\CakeSentry\Error;
 use Cake\Core\InstanceConfigTrait;
 use Cake\Error\PHP7ErrorException;
 use Cake\Log\Log;
+use Connehito\CakeSentry\Http\Client;
 use ErrorException;
 use Exception;
 
@@ -22,7 +23,7 @@ trait SentryErrorHandlerTrait
      */
     abstract protected function _getMessage(Exception $exception);
 
-    /* @var \Connehito\CakeSentry\Http\Client */
+    /* @var Client */
     protected $client;
 
     /**
@@ -42,7 +43,7 @@ trait SentryErrorHandlerTrait
     /**
      * Handles exception logging.
      *
-     * @param \Exception $exception Exception instance.
+     * @param Exception $exception Exception instance.
      * @return bool
      */
     protected function _logException(Exception $exception)
