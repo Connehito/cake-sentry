@@ -8,6 +8,7 @@ use Cake\Log\Log;
 use Connehito\CakeSentry\Error\ConsoleErrorHandler;
 use Connehito\CakeSentry\Error\ErrorHandler;
 use Connehito\CakeSentry\Error\Middleware\ErrorHandlerMiddleware;
+use Connehito\CakeSentry\Log\Engine\SentryLog;
 use LogicException;
 
 $isCli = PHP_SAPI === 'cli';
@@ -18,7 +19,7 @@ if ($isCli) {
 }
 
 $errorLogConfig = Log::getConfig('error');
-$errorLogConfig['className'] = 'Connehito\CakeSentry\Log\Engine\SentryLog';
+$errorLogConfig['className'] = SentryLog::class;
 Log::drop('error');
 Log::setConfig('error', $errorLogConfig);
 
