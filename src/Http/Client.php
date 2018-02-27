@@ -23,10 +23,10 @@ class Client
     protected $_defaultConfig = [];
 
     /* @var \Raven_Client */
-    private $raven;
+    protected $raven;
 
     /* @var \Psr\Http\Message\ServerRequestInterface */
-    private $request;
+    protected $request;
 
     /**
      * Client constructor.
@@ -49,7 +49,7 @@ class Client
      * @param null|\Psr\Http\Message\ServerRequestInterface $request if null, factory from global
      * @return void
      */
-    private function setRequest($request)
+    protected function setRequest($request)
     {
         if ($request && !($request instanceof ServerRequestInterface)) {
             throw new InvalidArgumentException('Request must be ServerRequestInterface');
@@ -127,7 +127,7 @@ class Client
      *
      * @return void
      */
-    private function setupClient()
+    protected function setupClient()
     {
         $config = (array)Configure::read('Sentry');
         $dsn = Hash::get($config, 'dsn');
@@ -152,7 +152,7 @@ class Client
      *
      * @return bool
      */
-    private static function isHttpRequest()
+    protected static function isHttpRequest()
     {
         $isHttpRequest = new ReflectionMethod(Raven_Client::class, 'is_http_request');
         $isHttpRequest->setAccessible(true);

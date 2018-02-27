@@ -23,7 +23,7 @@ trait SentryErrorHandlerTrait
     abstract protected function _getMessage(Exception $exception);
 
     /* @var \Connehito\CakeSentry\Http\Client */
-    private $client;
+    protected $client;
 
     /**
      * Change error messages into ErrorException and write exception log.
