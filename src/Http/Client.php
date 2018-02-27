@@ -90,7 +90,7 @@ class Client
             }
             $this->raven->captureException($exception, $data);
         } else {
-            $stack = array_slice(debug_backtrace(), 3);
+            $stack = array_slice(debug_backtrace(DEBUG_BACKTRACE_PROVIDE_OBJECT), 3);
             $data += $context;
             if (!isset($data['level'])) {
                 $data['level'] = $level;
@@ -108,7 +108,7 @@ class Client
 
         if ($this->raven->getLastError() || $this->raven->getLastSentryError()) {
             $event = new Event('CakeSentry.Client.captureError', $this, $data);
-            $this->getEventManager()->dispatch($event)->getResult();
+            $this->getEventManager()->dispatch($event);
         }
     }
 
