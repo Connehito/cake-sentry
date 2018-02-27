@@ -107,7 +107,7 @@ class ClientTest extends TestCase
         ];
 
         $this->subject->getRaven()
-            ->expects($this->any())
+            ->expects($this->once())
             ->method('captureMessage')
             ->with('some error', [], $data, $stack);
 

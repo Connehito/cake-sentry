@@ -95,9 +95,10 @@ class SentryErrorHandlerTraitTest extends TestCase
         $method->setAccessible(true);
 
         $exception = new RuntimeException('something wrong.');
+        $scope = [];
         $this->logger->expects($this->once())
             ->method('log')
-            ->with('error', '[RuntimeException]something wrong.\'', compact('exception'));
+            ->with('error', '[RuntimeException]something wrong.', compact('exception', 'scope'));
 
         $method->invoke($this->subject, $exception);
     }
