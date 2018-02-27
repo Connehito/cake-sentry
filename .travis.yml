@@ -13,3 +13,4 @@ before_script:
 script:
   - composer cs-check
   - composer test
+  - vendor/bin/phpstan analyse src -l 2
