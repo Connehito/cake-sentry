@@ -21,22 +21,50 @@ composer require connehito/cake-sentry
 ### Set config files.
 in `config/bootstrap.php`
 ```php
-if (Configure::read('Sentry.enabled')) {
-  Plugin::load('Connehito/CakeSentry', ['bootstrap' => true]);
-}
+Plugin::load('Connehito/CakeSentry', ['bootstrap' => true]);
 ```
 
-in `config/app.php`
 ```php
-return [
+// in `config/app.php`
   'Sentry' => [
     'dsn' => YOUR_SENTRY_DSN_HERE
   ]
 ];
 ```
 
+or use cake command.
+```
+bin/cake plugin load Connehito/CakeSentry --bootstrap
+```
+
+That's all! :tada:
+
 ### Advanced Usage
-Client dispatch `CakeSentry.Client.beforeCapture` event before sending error to sentry, you can set context with EventListener.
+
+#### Ignore noisy exceptions
+You can filter out exceptions that make a fuss and harder to determine the issues to address(like PageNotFoundException)
+Set exceptions not to log in `Error.skipLog`.  
+
+ex)
+```php
+// in `config/app.php`
+'Error' => [$
+    'skipLog' => [
+        NotFoundException::class,
+        MissingRouteException::class,
+        MissingControllerException::class,
+    ],
+]
+```
+
+ref: CakePHP Cookbook  
+https://book.cakephp.org/3.0/en/development/errors.html#error-exception-configuration
+
+#### Send more context
+Client dispatch `CakeSentry.Client.beforeCapture` event before sending error to sentry.  
+You can set context with EventListener.Calling Raven_Client's API or returning values, error context will be sent. The Returned values will be passed to `Raven_Client::captureMessage()` 3rd arguments(Additional attributes to pass with this event).
+
+Now, cake-sentry supports to get `Request` instance in implemented event via `$event->getSubject()->getRequest()`.
 
 ex)
 ```php
@@ -56,10 +84,19 @@ class SentryErrorContext implements EventListenerInterface
     {
         $request = $event->getSubject()->getRequest();
         $request->trustProxy = true;
-        $event->getSubject()->getRaven()
-            ->user_context([
+        $raven = $event->getSubject()->getRaven();
+        $raven->user_context([
                 'ip_address' => $request->clientIp()
             ]);
+        $raven->tags_context([
+            'app_version' => $request->getHeaderLine('App-Version') ?: 1.0,
+        ]);
+
+        return [
+            'extra' => [
+                'foo' => 'bar',
+            ]
+        ];
     }
 }
 ```
