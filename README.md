@@ -48,7 +48,7 @@ Set exceptions not to log in `Error.skipLog`.
 ex)
 ```php
 // in `config/app.php`
-'Error' => [$
+'Error' => [
     'skipLog' => [
         NotFoundException::class,
         MissingRouteException::class,
