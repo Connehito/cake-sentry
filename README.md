@@ -3,6 +3,7 @@ CakePHP integration for Sentry.
 
 [![Build Status](https://travis-ci.org/Connehito/cake-sentry.svg?branch=master)](https://travis-ci.org/Connehito/cake-sentry)
 [![codecov](https://codecov.io/gh/connehito/cake-sentry/branch/master/graph/badge.svg)](https://codecov.io/gh/connehito/cake-sentry)
+[![MIT License](http://img.shields.io/badge/license-MIT-blue.svg?style=flat)](https://github.com/Connehito/cake-sentry/blob/master/LICENSE)
 
 ## Requirements
 - PHP 7.0+
@@ -114,4 +115,4 @@ Pull requests and feedback are very welcome :)
 on GitHub at https://github.com/connehito/cake-sentry .
 
 ## License
-The plugin is available as open source under the terms of the [MIT License](http://opensource.org/licenses/MIT).
+The plugin is available as open source under the terms of the [MIT License](https://github.com/Connehito/cake-sentry/blob/master/LICENSE).
