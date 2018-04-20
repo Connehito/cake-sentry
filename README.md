@@ -110,6 +110,29 @@ EventManager::instance()->on(new SentryErrorContext());
 ref: Sentry official PHP SDK document.  
 https://docs.sentry.io/clients/php/
 
+#### Register send callback
+The plugin allows you to inject `send_callback` option to Raven client.  
+It will be called in after client send  data to Sentry.  
+See also [offcial doc](https://docs.sentry.io/clients/php/config/).
+
+ex)
+```php
+// In app.php, setup callback closure for receiving event id from Raven.
+// This sample enables you to get "Event ID" via `$Session` in your controller.
+// cf) https://docs.sentry.io/learn/user-feedback/
+'Sentry' => [
+    'dsn' => env('SENTRY_DSN'),
+    'options' => [
+        'send_callback' => function ($data) {
+            $request = \Cake\Http\ServerRequestFactory::fromGlobals();
+            $session = $request->getSession();
+            $session->write('last_event_id', $data['event_id']);
+        }
+    ],
+],
+```
+
+
 ## Contributing
 Pull requests and feedback are very welcome :)  
 on GitHub at https://github.com/connehito/cake-sentry .
