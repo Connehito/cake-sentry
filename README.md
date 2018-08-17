@@ -46,7 +46,7 @@ public function bootstrap()
 {
     parent::bootstrap();
     
-    (...)
+    // Import other Plugins here.
 
     // Load the contact manager plugin by class name
     $this->addPlugin('Connehito/CakeSentry', ['bootstrap' => true]);
