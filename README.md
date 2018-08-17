@@ -38,7 +38,7 @@ or use cake command.
 bin/cake plugin load Connehito/CakeSentry --bootstrap
 ```
 
-### For cake superior to 3.6.x
+### For cake superior to 3.6.x ( https://book.cakephp.org/3.0/en/plugins.html#loading-a-plugin )
 
 in `src/Application.php`
 ```
