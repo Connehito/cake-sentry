@@ -38,6 +38,20 @@ or use cake command.
 bin/cake plugin load Connehito/CakeSentry --bootstrap
 ```
 
+### For cake superior to 3.6.x
+
+in `src/Application.php`
+```public function bootstrap()
+	{
+		parent::bootstrap();
+    
+    (...)
+
+		// Load the contact manager plugin by class name
+		$this->addPlugin('Connehito/CakeSentry', ['bootstrap' => true]);
+	}
+```
+
 That's all! :tada:
 
 ### Advanced Usage
