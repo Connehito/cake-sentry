@@ -20,20 +20,33 @@ composer require connehito/cake-sentry
 ## Usage
 
 ### Set config files.
-in `config/bootstrap.php`
-```php
-Plugin::load('Connehito/CakeSentry', ['bootstrap' => true]);
-```
-
+Write your sentry account info.
 ```php
 // in `config/app.php`
+return [
   'Sentry' => [
     'dsn' => YOUR_SENTRY_DSN_HERE
   ]
 ];
 ```
 
-or use cake command.
+### Loading plugin.
+In Application.php
+```php
+public function bootstrap()
+{
+    parent::bootstrap();
+
+    $this->addPlugin(Connehito\CakeSentry\Plugin::class);
+}
+```
+
+Or prior to 3.6.0, in `config/bootstrap.php`
+```php
+Plugin::load('Connehito/CakeSentry', ['bootstrap' => true]);
+```
+
+Or use cake command.
 ```
 bin/cake plugin load Connehito/CakeSentry --bootstrap
 ```
