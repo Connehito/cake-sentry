@@ -4,7 +4,7 @@
     "type": "cakephp-plugin",
     "require": {
         "php": "^7.0",
-        "cakephp/cakephp": "~3.5",
+        "cakephp/cakephp": "^3.6",
         "sentry/sentry": "^1.7"
     },
     "require-dev": {
