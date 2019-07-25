@@ -18,10 +18,11 @@ if ($isCli) {
     (new ErrorHandler(Configure::read('Error')))->register();
 }
 
-$errorLogConfig = Log::getConfig('error');
-$errorLogConfig['className'] = SentryLog::class;
-Log::drop('error');
-Log::setConfig('error', $errorLogConfig);
+if (!Log::getConfig('sentry_log')) {
+    $errorLogConfig = (array)Log::getConfig('error');
+    $errorLogConfig['className'] = SentryLog::class;
+    Log::setConfig('sentry_log', $errorLogConfig);
+}
 
 $appClass = Configure::read('App.namespace') . '\Application';
 if (class_exists($appClass)) {
