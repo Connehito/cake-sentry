@@ -42,6 +42,20 @@ That's all! :tada:
 
 ### Advanced Usage
 
+#### Configure logger
+You can config this plugin's logger with `sentry_log`. As below.
+```php
+// in config/app.php
+'Log' => [
+    'sentry_log' => [
+        'className' => 'CakeSentry.Sentry',
+        'levels' => ['emergency', 'alert', 'critical', 'error']
+    ],
+]
+```
+
+If you don't set `sentry_log` config, the plugin will copy your `error` and overwrite `className` to SentryLog.
+
 #### Ignore noisy exceptions
 You can filter out exceptions that make a fuss and harder to determine the issues to address(like PageNotFoundException)
 Set exceptions not to log in `Error.skipLog`.  
