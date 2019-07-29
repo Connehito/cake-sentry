@@ -2,11 +2,8 @@
 
 namespace Connehito\CakeSentry\Test;
 
-use Cake\Event\Event;
-use Cake\Event\EventManager;
-use Cake\Http\MiddlewareQueue;
-use Cake\Http\Server;
 use Cake\Error\Middleware\ErrorHandlerMiddleware as CakeErrorHandlerMiddleware;
+use Cake\Http\MiddlewareQueue;
 use Cake\TestSuite\TestCase;
 use Connehito\CakeSentry\Error\Middleware\ErrorHandlerMiddleware;
 use Connehito\CakeSentry\Plugin;
@@ -23,13 +20,6 @@ class PluginTest extends TestCase
         $middleware = new MiddlewareQueue();
         (new Plugin())->middleware($middleware);
 
-        EventManager::instance()->dispatch(
-            new Event(
-                'Server.buildMiddleware',
-                $this->prophesize(Server::class)->reveal(),
-                ['middleware' => $middleware]
-            )
-        );
         $this->assertInstanceOf(
             ErrorHandlerMiddleware::class,
             $middleware->get(0),
@@ -51,13 +41,6 @@ class PluginTest extends TestCase
         ]);
         (new Plugin())->middleware($middleware);
 
-        EventManager::instance()->dispatch(
-            new Event(
-                'Server.buildMiddleware',
-                $this->prophesize(Server::class)->reveal(),
-                ['middleware' => $middleware]
-            )
-        );
         $this->assertInstanceOf(
             ErrorHandlerMiddleware::class,
             $middleware->get($middleware->count() - 1),
@@ -81,13 +64,6 @@ class PluginTest extends TestCase
         ]);
         (new Plugin())->middleware($middleware);
 
-        EventManager::instance()->dispatch(
-            new Event(
-                'Server.buildMiddleware',
-                $this->prophesize(Server::class)->reveal(),
-                ['middleware' => $middleware]
-            )
-        );
         $this->assertInstanceOf(
             ErrorHandlerMiddleware::class,
             $middleware->get(3),
