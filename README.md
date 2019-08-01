@@ -37,7 +37,7 @@ public function bootstrap()
 {
     parent::bootstrap();
 
-    $this->addPlugin(Connehito\CakeSentry\Plugin::class);
+    $this->addPlugin(\Connehito\CakeSentry\Plugin::class);
 }
 ```
 
