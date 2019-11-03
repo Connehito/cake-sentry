@@ -41,14 +41,6 @@ class Application extends BaseApplication
             $this->bootstrapCli();
         }
 
-        /*
-         * Only try to load DebugKit in development mode
-         * Debug Kit should not be installed on a production system
-         */
-        if (Configure::read('debug')) {
-            $this->addPlugin(\DebugKit\Plugin::class);
-        }
-
         // Load more plugins here
     }
 
@@ -91,9 +83,5 @@ class Application extends BaseApplication
         } catch (MissingPluginException $e) {
             // Do not halt if the plugin is missing
         }
-
-        $this->addPlugin('Migrations');
-
-        // Load more plugins here
     }
 }
