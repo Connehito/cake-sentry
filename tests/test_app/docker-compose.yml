@@ -1,0 +1,12 @@
+version: "3.7"
+services:
+  test-app:
+    volumes:
+      - ../../src:/dist/src
+      - ../../config:/dist/config
+      - ../../composer.json:/dist/composer.json
+      - ../..:/app
+    container_name: cake-sentry-test-app
+    build:
+      context: ../..
+      dockerfile: ./tests/test_app/Dockerfile
