@@ -10,7 +10,29 @@
     ],
     "require": {
         "php": "^7.1",
+        "cakephp/cakephp": "^3.6",
+        "cakephp/plugin-installer": "^1.0",
         "connehito/cake-sentry": "@dev"
+    },
+    "require-dev": {
+        "cakephp/bake": "@stable",
+        "cakephp/debug_kit": "@stable",
+        "psy/psysh": "@stable"
+    },
+    "authors": [
+        {
+            "name": "Hideki Kinjyo",
+            "email": "dev@o0h.in"
+        }
+    ],
+    "autoload": {
+        "psr-4": {
+            "App\\": "src/"
+        }
+    },
+    "scripts": {
+        "post-install-cmd": "App\\Console\\Installer::postInstall",
+        "post-autoload-dump": "Cake\\Composer\\Installer\\PluginInstaller::postAutoloadDump"
     },
     "config": {
         "sort-packages": true
