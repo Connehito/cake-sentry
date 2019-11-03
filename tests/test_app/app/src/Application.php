@@ -42,6 +42,7 @@ class Application extends BaseApplication
         }
 
         // Load more plugins here
+        $this->addPlugin('Connehito/CakeSentry', ['bootstrap' => true]);
     }
 
     /**

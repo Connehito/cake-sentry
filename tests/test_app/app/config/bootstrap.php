@@ -18,6 +18,10 @@
  */
 require __DIR__ . '/paths.php';
 
+if (!env('SENTRY_DSN')) {
+    throw new RuntimeException('Please set SENTRY_DSN');
+}
+
 /*
  * Bootstrap CakePHP.
  *
