@@ -3,9 +3,10 @@
     "description": "Sentry plugin for CakePHP3",
     "type": "cakephp-plugin",
     "require": {
-        "php": "^7.0",
+        "php": "^7.1",
         "cakephp/cakephp": "^3.6",
-        "sentry/sentry": "^1.7"
+        "sentry/sdk": "^2.0",
+        "sentry/sentry": "^2.1"
     },
     "require-dev": {
         "cakephp/cakephp-codesniffer": "^3.0",
@@ -28,10 +29,13 @@
         "test": "phpunit",
         "cs-check": "phpcs --colors -p ./src"
     },
+    "config": {
+        "sort-packages": true
+    },
     "authors": [
         {
             "name": "Hideki Kinjyo",
-            "email": "kinjyo@connehito.com",
+            "email": "dev@o0h.in",
             "role": "Maintainer"
         }
     ]

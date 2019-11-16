@@ -12,7 +12,7 @@ use PHPUnit_Framework_MockObject_MockObject;
 use Psr\Log\LoggerInterface;
 use RuntimeException;
 
-class ErrorHandlerMiddlewareTest extends TestCase
+final class ErrorHandlerMiddlewareTest extends TestCase
 {
     /** @var PHPUnit_Framework_MockObject_MockObject LoggerInterface */
     private $logger;

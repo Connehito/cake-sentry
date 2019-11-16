@@ -1,4 +1,5 @@
 <?php
+
 namespace Connehito\CakeSentry\Http;
 
 use Cake\Core\Configure;
@@ -6,13 +7,14 @@ use Cake\Core\InstanceConfigTrait;
 use Cake\Error\PHP7ErrorException;
 use Cake\Event\Event;
 use Cake\Event\EventDispatcherTrait;
-use Cake\Http\ServerRequestFactory;
-use Cake\Routing\Router;
 use Cake\Utility\Hash;
-use InvalidArgumentException;
+use function Sentry\init;
 use Psr\Http\Message\ServerRequestInterface;
-use Raven_Client;
-use ReflectionMethod;
+use RuntimeException;
+use Sentry\Breadcrumb;
+use Sentry\SentrySdk;
+use Sentry\Severity;
+use Sentry\State\Hub;
 
 class Client
 {
@@ -22,8 +24,8 @@ class Client
     /* @var array default instance config */
     protected $_defaultConfig = [];
 
-    /* @var \Raven_Client */
-    protected $raven;
+    /* @var Hub */
+    protected $hub;
 
     /* @var ServerRequestInterface */
     protected $request;
@@ -32,41 +34,20 @@ class Client
      * Client constructor.
      *
      * @param array $config config for uses Sentry
-     * @param ServerRequestInterface $request request context message
      */
-    public function __construct(array $config, ServerRequestInterface $request = null)
+    public function __construct(array $config)
     {
         $this->setConfig($config);
-        if (self::isHttpRequest()) {
-            $this->setRequest($request);
-        }
         $this->setupClient();
     }
 
     /**
-     * Set context RequestMessage.
-     *
-     * @param null|ServerRequestInterface $request if null, factory from global
-     * @return void
+     * Accessor for current hub
+     * @return Hub
      */
-    protected function setRequest($request)
+    public function getHub(): Hub
     {
-        if ($request && !($request instanceof ServerRequestInterface)) {
-            throw new InvalidArgumentException('Request must be ServerRequestInterface');
-        } elseif (!$request) {
-            $request = Router::getRequest(true) ?: ServerRequestFactory::fromGlobals();
-        }
-        $this->request = $request;
-    }
-
-    /**
-     * Set context RequestMessage.
-     *
-     * @return null|ServerRequestInterface contextual request
-     */
-    public function getRequest()
-    {
-        return $this->request;
+        return $this->hub;
     }
 
     /**
@@ -78,48 +59,42 @@ class Client
      *
      * @return void
      */
-    public function capture($level, string $message, array $context)
+    public function capture($level, string $message, array $context): void
     {
         $event = new Event('CakeSentry.Client.beforeCapture', $this, $context);
-        $data = (array)$this->getEventManager()->dispatch($event)->getResult();
+        $this->getEventManager()->dispatch($event);
 
         $exception = Hash::get($context, 'exception');
         if ($exception) {
             if ($exception instanceof PHP7ErrorException) {
                 $exception = $exception->getError();
             }
-            $this->raven->captureException($exception, $data);
+            $lastEventId = $this->hub->captureException($exception);
         } else {
-            $stack = array_slice(debug_backtrace(DEBUG_BACKTRACE_PROVIDE_OBJECT), 3);
-            $data += $context;
-            if (!isset($data['level'])) {
-                $data['level'] = $level;
+            $stacks = array_slice(debug_backtrace(DEBUG_BACKTRACE_PROVIDE_OBJECT), 3);
+            foreach ($stacks as $stack) {
+                $method = isset($stack['class']) ? "{$stack['class']}::{$stack['function']}" : $stack['function'];
+                unset($stack['class']);
+                unset($stack['function']);
+                $this->hub->addBreadcrumb(new Breadcrumb(
+                    $level,
+                    Breadcrumb::TYPE_ERROR,
+                    'method',
+                    $method,
+                    $stack
+                ));
             }
-            foreach (['file', 'line'] as $stackField) {
-                if (!isset($data[$stackField])) {
-                    $data[$stackField] = $stack[0][$stackField];
-                }
+            if (method_exists(Severity::class, $level)) {
+                $severity = (Severity::class . '::' . $level)();
+            } else {
+                $severity = Severity::fromError($level);
             }
-            $data = array_filter($data, function ($val) {
-                return !is_null($val);
-            });
-            $this->raven->captureMessage($message, [], $data, $stack);
+            $lastEventId = $this->hub->captureMessage($message, $severity);
         }
 
-        if ($this->raven->getLastError() || $this->raven->getLastSentryError()) {
-            $event = new Event('CakeSentry.Client.captureError', $this, $data);
-            $this->getEventManager()->dispatch($event);
-        }
-    }
-
-    /**
-     * Accessor for Raven_Client instance.
-     *
-     * @return Raven_Client
-     */
-    public function getRaven()
-    {
-        return $this->raven;
+        $context['lastEventId'] = $lastEventId;
+        $event = new Event('CakeSentry.Client.afterCapture', $this, $context);
+        $this->getEventManager()->dispatch($event);
     }
 
     /**
@@ -130,33 +105,20 @@ class Client
     protected function setupClient()
     {
         $config = (array)Configure::read('Sentry');
-        $dsn = Hash::get($config, 'dsn');
-        if (!$dsn) {
-            throw new InvalidArgumentException('Sentry DSN not provided.');
+        if (!Hash::check($config, 'dsn')) {
+            throw new RuntimeException('Sentry DSN not provided.');
         }
-        $options = (array)Hash::get($config, 'options');
-        if (!Hash::get($options, 'send_callback')) {
-            $options['send_callback'] = function () {
+        if (!Hash::get($config, 'before_send')) {
+            $config['before_send'] = function () {
                 $event = new Event('CakeSentry.Client.afterCapture', $this, func_get_args());
-                $this->getEventManager()->dispatch($event)->getResult();
+                $this->getEventManager()->dispatch($event);
             };
         }
-        $raven = new Raven_Client($dsn, $options);
 
-        $this->raven = $raven;
-    }
+        init($config);
+        $this->hub = SentrySdk::getCurrentHub();
 
-    /**
-     * Detect Http request or not.
-     * (Delegate Raven_Client private logic.)
-     *
-     * @return bool
-     */
-    protected static function isHttpRequest()
-    {
-        $isHttpRequest = new ReflectionMethod(Raven_Client::class, 'is_http_request');
-        $isHttpRequest->setAccessible(true);
-
-        return $isHttpRequest->invoke(null);
+        $event = new Event('CakeSentry.Client.afterSetup', $this);
+        $this->getEventManager()->dispatch($event);
     }
 }

@@ -8,7 +8,7 @@ use Connehito\CakeSentry\Log\Engine\SentryLog;
 use PHPUnit\Framework\TestCase;
 use ReflectionProperty;
 
-class SentryLogTest extends TestCase
+final class SentryLogTest extends TestCase
 {
     /** @var SentryLog */
     private $subject;

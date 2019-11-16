@@ -15,7 +15,7 @@ use RuntimeException;
 /**
  * Testing stub.
  */
-class Stub
+final class Stub
 {
     use SentryErrorHandlerTrait;
 
