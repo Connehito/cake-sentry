@@ -8,6 +8,9 @@ use Connehito\CakeSentry\Error\ErrorHandler;
 use Connehito\CakeSentry\Log\Engine\SentryLog;
 
 $isCli = PHP_SAPI === 'cli';
+if (!$isCli && strpos((env('argv')[0] ?? ''), '/phpunit') !== false) {
+    $isCli = true;
+}
 if ($isCli) {
     (new ConsoleErrorHandler(Configure::read('Error')))->register();
 } else {
