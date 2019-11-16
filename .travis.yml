@@ -23,6 +23,7 @@ matrix:
 before_script:
   - if [[ $TRAVIS_PHP_VERSION != '7.4snapshot' ]]; then phpenv config-rm xdebug.ini; fi
   - composer update --prefer-dist --no-interaction $PREFER_LOWEST
+  - composer show -i
 
 script:
   - if [[ $TEST = 1 && $CODECOV = 0 ]]; then vendor/bin/phpunit; fi
