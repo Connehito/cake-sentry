@@ -15,7 +15,7 @@ before_script:
 script:
   - composer cs-check
   - vendor/bin/phpunit --coverage-clover=clover.xml
-  - vendor/bin/phpstan analyse src -l 2
+  - vendor/bin/phpstan
 
 after_success:
   - bash <(curl -s https://codecov.io/bash)
