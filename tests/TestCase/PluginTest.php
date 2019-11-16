@@ -8,7 +8,7 @@ use Cake\TestSuite\TestCase;
 use Connehito\CakeSentry\Error\Middleware\ErrorHandlerMiddleware;
 use Connehito\CakeSentry\Plugin;
 
-class PluginTest extends TestCase
+final class PluginTest extends TestCase
 {
     /**
      * Test middleware hook to set SentryErrorHandlerMiddleware.
