@@ -4,12 +4,20 @@ namespace Connehito\CakeSentry\Test\TestCase\Http;
 
 use Cake\Core\Configure;
 use Cake\Event\Event;
+use Cake\Event\EventManager;
+use Cake\Http\Exception\NotFoundException;
 use Cake\TestSuite\TestCase;
 use Connehito\CakeSentry\Http\Client;
+use Prophecy\Argument;
 use ReflectionProperty;
 use RuntimeException;
+use Sentry\ClientInterface;
+use Sentry\Options;
+use Sentry\Severity;
+use Sentry\State\Hub;
+use Sentry\State\Scope;
 
-class ClientTest extends TestCase
+final class ClientTest extends TestCase
 {
     /** @var Client */
     private $subject;
@@ -22,35 +30,110 @@ class ClientTest extends TestCase
         parent::setUp();
 
         Configure::write('Sentry.dsn', 'https://user:pass@example.com/yourproject');
+    }
+
+    /**
+     * Check constructor sets Hub instance
+     *
+     * @return void
+     */
+    public function testSetupClient()
+    {
         $subject = new Client([]);
+        $this->assertInstanceOf(
+            Hub::class,
+            $subject->getHub()
+        );
+    }
 
-        $ravenMock = $this->getMockBuilder(\Raven_Client::class)->getMock();
+    /**
+     * Check constructor throws exception unless dsn is given
+     *
+     * @return void
+     */
+    public function testSetupClientNotHasDsn()
+    {
+        Configure::delete('Sentry.dsn');
+        $this->expectException(RuntimeException::class);
+        new Client([]);
+    }
 
-        $prop = new ReflectionProperty($subject, 'raven');
-        $prop->setAccessible(true);
-        $prop->setValue($subject, $ravenMock);
-        $this->subject = $subject;
+    /**
+     * Check constructor passes options to sentry client
+     *
+     * @return void
+     */
+    public function testSetupClientSetOptions()
+    {
+        Configure::write('Sentry.excluded_exceptions', [NotFoundException::class]);
+        $subject = new Client([]);
+        $options = $subject->getHub()->getClient()->getOptions();
+
+        $this->assertSame(
+            [NotFoundException::class],
+            $options->getExcludedExceptions()
+        );
+    }
+
+    /**
+     * Check constructor fill before_send option
+     *
+     * @return void
+     */
+    public function testSetupClientSetSendCallback()
+    {
+        $subject = new Client([]);
+        $actual = $subject
+            ->getHub()
+            ->getClient()
+            ->getOptions()
+            ->getBeforeSendCallback();
+        $this->assertInstanceOf(
+            \Closure::class,
+            $actual
+        );
+    }
+
+    /**
+     * Check constructor dispatch event Client.afterSetup
+     *
+     * @return void
+     */
+    public function testSetupClientDispatchAfterSetup()
+    {
+        $called = false;
+        EventManager::instance()->on(
+            'CakeSentry.Client.afterSetup',
+            function () use (&$called) {
+                $called = true;
+            }
+        );
+        new Client([]);
+
+        $this->assertTrue($called);
     }
 
     /**
      * test capture exception
      *
-     * @covers \Connehito\CakeSentry\Http\Client::capture()
      * @return void
      */
     public function testCaptureException()
     {
-        $exception = new RuntimeException('something wrong.');
-        $this->subject->getRaven()
-            ->expects($this->once())
-            ->method('captureException')
-            ->with($exception, []);
+        $subject = new Client([]);
+        $sentryClientP = $this->prophesize(ClientInterface::class);
+        $subject->getHub()->bindClient($sentryClientP->reveal());
 
-        $this->subject->capture(
-            E_USER_WARNING,
+        $exception = new RuntimeException('something wrong.');
+        $subject->capture(
+            'error',
             'some exception',
             ['exception' => $exception]
         );
+
+        $sentryClientP
+            ->captureException($exception, Argument::type(Scope::class))
+            ->shouldHaveBeenCalled();
     }
 
     /**
@@ -61,92 +144,137 @@ class ClientTest extends TestCase
      */
     public function testCaptureError()
     {
-        $stack = debug_backtrace(DEBUG_BACKTRACE_PROVIDE_OBJECT);
-        $stack = array_slice($stack, 2);
-        $data = [
-            'level' => E_USER_WARNING,
-            'file' => $stack[0]['file'],
-            'line' => $stack[0]['line'],
-        ];
-        $this->subject->getRaven()
-            ->expects($this->once())
-            ->method('captureMessage')
-            ->with('some error', [], $data, $stack);
+        $subject = new Client([]);
+        $sentryClientP = $this->prophesize(ClientInterface::class);
+        $sentryClientP->getOptions()
+            ->shouldBeCalled()
+            ->willReturn(new Options());
+        $sentryClientP
+            ->captureMessage(
+                'some error',
+                Severity::fromError(E_WARNING),
+                Argument::type(Scope::class)
+            )
+            ->shouldBeCalled();
+        $subject->getHub()->bindClient($sentryClientP->reveal());
 
-        $this->subject->capture(
-            E_USER_WARNING,
+        $subject->capture(
+            'warning',
             'some error',
             []
         );
     }
 
     /**
-     * test capture dispatch beforeCapture
+     * test capture error fill breadcrumbs
+     *
+     * @covers \Connehito\CakeSentry\Http\Client::capture()
+     * @return void
+     */
+    public function testCaptureErrorBuildBreadcrumbs()
+    {
+        $subject = new Client([]);
+        $sentryClientP = $this->prophesize(ClientInterface::class);
+        $sentryClientP->getOptions()
+            ->shouldBeCalled()
+            ->willReturn(new Options());
+        $sentryClientP
+            ->captureMessage(
+                Argument::any(),
+                Argument::any(),
+                Argument::that(function ($a) use (&$expect) {
+                    $breadcrumbsProp = new ReflectionProperty($a, 'breadcrumbs');
+                    $breadcrumbsProp->setAccessible(true);
+                    $breadcrumbs = $breadcrumbsProp->getValue($a);
+                    $metadata = $breadcrumbs[0]->getMetaData();
+                    foreach ($expect as $field => $val) {
+                        if ($metadata[$field] !== $val) {
+                            return false;
+                        }
+                    }
+
+                    return true;
+                })
+            )
+            ->shouldBeCalled();
+        $subject->getHub()->bindClient($sentryClientP->reveal());
+
+        $stack = debug_backtrace(DEBUG_BACKTRACE_PROVIDE_OBJECT);
+        $stack = array_slice($stack, 2);
+        $expect = [
+            'file' => $stack[0]['file'],
+            'line' => $stack[0]['line'],
+        ];
+        $subject->capture(
+            'warning',
+            'some error',
+            []
+        );
+    }
+
+    /**
+     * Check capture dispatch beforeCapture
      *
      * @return void
      */
     public function testCaptureDispatchBeforeCapture()
     {
-        $this->subject->getEventManager()->on(
+        $subject = new Client([]);
+        $sentryClientP = $this->prophesize(ClientInterface::class);
+        $subject->getHub()->bindClient($sentryClientP->reveal());
+
+        $called = false;
+        EventManager::instance()->on(
             'CakeSentry.Client.beforeCapture',
-            function () {
-                return [
-                    'user' => ['id' => 100],
-                    'extra' => ['special' => 'yeah!!'],
-                ];
+            function () use (&$called) {
+                $called = true;
             }
         );
-        $stack = debug_backtrace(DEBUG_BACKTRACE_PROVIDE_OBJECT);
-        $stack = array_slice($stack, 2);
-        $data = [
-            'level' => E_USER_WARNING,
-            'file' => $stack[0]['file'],
-            'line' => $stack[0]['line'],
-            'user' => ['id' => 100],
-            'extra' => ['special' => 'yeah!!'],
-        ];
 
-        $this->subject->getRaven()
-            ->expects($this->once())
-            ->method('captureMessage')
-            ->with('some error', [], $data, $stack);
-
-        $this->subject->capture(
-            E_USER_WARNING,
+        $subject->capture(
+            'info',
             'some error',
-            []
+            ['exception' => new \Exception()]
         );
+
+        $this->assertTrue($called);
     }
 
     /**
-     * test capture dispatch captureError
+     * Check capture dispatch afterCapture and receives lastEventId
      *
      * @return void
      */
-    public function testCaptureDispatchCaptureError()
+    public function testCaptureDispatchAfterCapture()
     {
-        $this->subject->getEventManager()->on(
-            'CakeSentry.Client.captureError',
-            function (Event $event) {
-                $subject = $event->getSubject();
-                $subject->lastError = true;
+        $lastEventId = 'aaa';
+
+        $subject = new Client([]);
+        $sentryClientP = $this->prophesize(ClientInterface::class);
+        $sentryClientP->captureException(Argument::cetera())
+            ->shouldBeCalled()
+            ->willReturn($lastEventId);
+        $subject->getHub()->bindClient($sentryClientP->reveal());
+
+        $called = false;
+        EventManager::instance()->on(
+            'CakeSentry.Client.afterCapture',
+            function (Event $event) use (&$called, &$actualLastEventId) {
+                $called = true;
+                $actualLastEventId = $event->getData('lastEventId');
             }
         );
 
-        $this->subject->getRaven()
-            ->expects($this->any())
-            ->method('captureMessage');
-        $this->subject->getRaven()
-            ->expects($this->once())
-            ->method('getLastError')
-            ->willReturn(true);
-
-        $this->subject->capture(
-            E_USER_WARNING,
+        $subject->capture(
+            'info',
             'some error',
-            []
+            ['exception' => new \Exception()]
         );
 
-        $this->assertTrue($this->subject->lastError);
+        $this->assertTrue($called);
+        $this->assertSame(
+            $lastEventId,
+            $actualLastEventId
+        );
     }
 }
