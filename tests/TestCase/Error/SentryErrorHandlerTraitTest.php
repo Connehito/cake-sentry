@@ -37,7 +37,7 @@ final class Stub
     }
 }
 
-class SentryErrorHandlerTraitTest extends TestCase
+final class SentryErrorHandlerTraitTest extends TestCase
 {
     /** @var Stub test subject */
     private $subject;
