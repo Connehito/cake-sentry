@@ -9,13 +9,29 @@ cache:
     - vendor
     - $HOME/.composer/cache
 
+env:
+  global:
+    - PREFER_LOWEST="--prefer-lowest" TEST=1 CODECOV=0 STAN=0
+
+matrix:
+  include:
+    - php: 7.3
+      env: PREFER_LOWEST="" TEST=1 CODECOV=1 STAN=1
+    - php: "7.4snapshot"
+      env: PREFER_LOWEST="" TEST=1 CODECOV=0 STAN=0
+
 before_script:
-  - composer install --prefer-dist --no-interaction
+  - if [[ $TRAVIS_PHP_VERSION != '7.4snapshot' ]]; then phpenv config-rm xdebug.ini; fi
+  - composer update --prefer-dist --no-interaction $PREFER_LOWEST
 
 script:
-  - composer cs-check
-  - vendor/bin/phpunit --coverage-clover=clover.xml
-  - vendor/bin/phpstan
+  - if [[ $TEST = 1 && $CODECOV = 0 ]]; then vendor/bin/phpunit; fi
+  - if [[ $TEST = 1 && $CODECOV = 1 ]]; then phpdbg -qrr vendor/bin/phpunit --coverage-clover=clover.xml; fi
+  - |
+    if [[ $STAN = 1 ]]; then
+      composer cs-check
+      vendor/bin/phpstan
+    fi
 
 after_success:
-  - bash <(curl -s https://codecov.io/bash)
+  - if [[ $TEST = 1 && $CODECOV = 1 ]]; then bash <(curl -s https://codecov.io/bash); fi
