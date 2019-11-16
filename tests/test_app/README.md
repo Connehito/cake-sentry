@@ -9,7 +9,7 @@ You can build stand alone CakePHP server with docker-compose for the following u
 1. `dokcer-compose up` in test/test_app.
 2. `docker-compose run --rm  test-app bash` and go into container.
 3. `composer install` if vendor dir is not created.
-4. `vendor/bin/phpuni` to execute tests.
+4. `vendor/bin/phpunit` to execute tests.
 
 ## Sandbox app
 Before do it, you must create Sentry PJ and get your DSN.  
