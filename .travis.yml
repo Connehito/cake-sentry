@@ -22,6 +22,8 @@ matrix:
 
 before_script:
   - if [[ $TRAVIS_PHP_VERSION != '7.4snapshot' ]]; then phpenv config-rm xdebug.ini; fi
+  # @see https://github.com/cakephp/cakephp/commit/249cbc3d3a00e9eca931f44ee6990312f156e6cc#diff-4dafde5c48406484f186b8294c20e12c
+  - if [[ $TRAVIS_PHP_VERSION = 7.3 && $PREFER_LOWEST = '--prefer-lowest' ]]; then composer require cakephp/cakephp:3.6.13; fi
   - composer update --prefer-dist --no-interaction $PREFER_LOWEST
   - composer show -i
 
