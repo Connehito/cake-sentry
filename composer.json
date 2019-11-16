@@ -13,7 +13,7 @@
         "dereuromark/cakephp-ide-helper": "^0.10.3",
         "jangregor/phpstan-prophecy": "^0.4.2",
         "phpstan/phpstan": "@stable",
-        "phpunit/phpunit": "^6.4"
+        "phpunit/phpunit": "^6.4|^7.0"
     },
     "license": "MIT",
     "autoload": {
