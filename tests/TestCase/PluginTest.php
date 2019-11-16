@@ -1,6 +1,6 @@
 <?php
 
-namespace Connehito\CakeSentry\Test;
+namespace Connehito\CakeSentry\Test\TestCase;
 
 use Cake\Error\Middleware\ErrorHandlerMiddleware as CakeErrorHandlerMiddleware;
 use Cake\Http\MiddlewareQueue;

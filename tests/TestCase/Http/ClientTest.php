@@ -173,6 +173,12 @@ final class ClientTest extends TestCase
      */
     public function testCaptureErrorBuildBreadcrumbs()
     {
+        $stacks = debug_backtrace(DEBUG_BACKTRACE_PROVIDE_OBJECT);
+        $expect = [
+            'file' => $stacks[2]['file'],
+            'line' => $stacks[2]['line'],
+        ];
+
         $subject = new Client([]);
         $sentryClientP = $this->prophesize(ClientInterface::class);
         $sentryClientP->getOptions()
@@ -199,12 +205,6 @@ final class ClientTest extends TestCase
             ->shouldBeCalled();
         $subject->getHub()->bindClient($sentryClientP->reveal());
 
-        $stack = debug_backtrace(DEBUG_BACKTRACE_PROVIDE_OBJECT);
-        $stack = array_slice($stack, 2);
-        $expect = [
-            'file' => $stack[0]['file'],
-            'line' => $stack[0]['line'],
-        ];
         $subject->capture(
             'warning',
             'some error',
