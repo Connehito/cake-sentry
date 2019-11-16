@@ -30,7 +30,7 @@ script:
   - |
     if [[ $STAN = 1 ]]; then
       composer cs-check
-      vendor/bin/phpstan
+      vendor/bin/phpstan analyse
     fi
 
 after_success:
