@@ -7,7 +7,7 @@ CakePHP integration for Sentry.
 
 ## Requirements
 - PHP 7.1+
-- CakePHP 3.5+
+- CakePHP 3.6+
 - and [Sentry](https://sentry.io) account
 
 
@@ -41,11 +41,6 @@ public function bootstrap()
 }
 ```
 
-Or prior to 3.6.0, in `config/bootstrap.php`
-```php
-Plugin::load('Connehito/CakeSentry', ['bootstrap' => true]);
-```
-
 Or use cake command.
 ```
 bin/cake plugin load Connehito/CakeSentry --bootstrap
@@ -57,7 +52,7 @@ That's all! :tada:
 
 #### Ignore noisy exceptions
 You can filter out exceptions that make a fuss and harder to determine the issues to address(like PageNotFoundException)
-Set exceptions not to log in `Error.skipLog`.  
+Set exceptions not to log in `Error.skipLog`.
 
 ex)
 ```php
