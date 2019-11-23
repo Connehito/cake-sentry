@@ -1,0 +1,10 @@
+includes:
+- vendor/jangregor/phpstan-prophecy/src/extension.neon
+parameters:
+    paths:
+      - src
+      - tests/TestCase
+    level: 5
+    autoload_files:
+      - tests/bootstrap.php
+      - tests/TestCase/Error/SentryErrorHandlerTraitTest.php # for including stub class

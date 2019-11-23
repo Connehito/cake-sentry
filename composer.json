@@ -3,15 +3,16 @@
     "description": "Sentry plugin for CakePHP3",
     "type": "cakephp-plugin",
     "require": {
-        "php": "^7.0",
-        "cakephp/cakephp": "~3.5",
-        "sentry/sentry": "^1.7"
+        "php": "^7.1",
+        "cakephp/cakephp": "^3.6",
+        "sentry/sdk": "^2.0",
+        "sentry/sentry": "^2.2"
     },
     "require-dev": {
         "cakephp/cakephp-codesniffer": "^3.0",
-        "dereuromark/cakephp-ide-helper": "^0.10.3",
-        "phpunit/phpunit": "^6.4",
-        "phpstan/phpstan": "^0.9.2"
+        "jangregor/phpstan-prophecy": "^0.4.2",
+        "phpstan/phpstan": "@stable",
+        "phpunit/phpunit": "^6.4|^7.0"
     },
     "license": "MIT",
     "autoload": {
@@ -28,10 +29,13 @@
         "test": "phpunit",
         "cs-check": "phpcs --colors -p ./src"
     },
+    "config": {
+        "sort-packages": true
+    },
     "authors": [
         {
             "name": "Hideki Kinjyo",
-            "email": "kinjyo@connehito.com",
+            "email": "dev@o0h.in",
             "role": "Maintainer"
         }
     ]
