@@ -1,9 +1,11 @@
 # CakePHP Sentry Plugin
 CakePHP integration for Sentry.
 
+[![Latest Stable Version](https://poser.pugx.org/connehito/cake-sentry/v/stable)](https://packagist.org/packages/connehito/cake-sentry)
+[![Total Downloads](https://poser.pugx.org/connehito/cake-sentry/downloads)](https://packagist.org/packages/connehito/cake-sentry)
 [![Build Status](https://travis-ci.org/Connehito/cake-sentry.svg?branch=master)](https://travis-ci.org/Connehito/cake-sentry)
 [![codecov](https://codecov.io/gh/connehito/cake-sentry/branch/master/graph/badge.svg)](https://codecov.io/gh/connehito/cake-sentry)
-[![MIT License](http://img.shields.io/badge/license-MIT-blue.svg?style=flat)](https://github.com/Connehito/cake-sentry/blob/master/LICENSE)
+[![License](https://poser.pugx.org/connehito/cake-sentry/license)](https://packagist.org/packages/connehito/cake-sentry)
 
 ## Requirements
 - PHP 7.1+
