@@ -19,9 +19,6 @@ use Sentry\State\Scope;
 
 final class ClientTest extends TestCase
 {
-    /** @var Client */
-    private $subject;
-
     /**
      * {@inheritdoc}
      */
@@ -40,6 +37,7 @@ final class ClientTest extends TestCase
     public function testSetupClient()
     {
         $subject = new Client([]);
+
         $this->assertInstanceOf(
             Hub::class,
             $subject->getHub()
@@ -55,6 +53,7 @@ final class ClientTest extends TestCase
     {
         Configure::delete('Sentry.dsn');
         $this->expectException(RuntimeException::class);
+
         new Client([]);
     }
 
@@ -66,6 +65,7 @@ final class ClientTest extends TestCase
     public function testSetupClientSetOptions()
     {
         Configure::write('Sentry.excluded_exceptions', [NotFoundException::class]);
+
         $subject = new Client([]);
         $options = $subject->getHub()->getClient()->getOptions();
 
@@ -88,6 +88,7 @@ final class ClientTest extends TestCase
             ->getClient()
             ->getOptions()
             ->getBeforeSendCallback();
+
         $this->assertInstanceOf(
             \Closure::class,
             $actual
@@ -108,6 +109,7 @@ final class ClientTest extends TestCase
                 $called = true;
             }
         );
+
         new Client([]);
 
         $this->assertTrue($called);
@@ -139,16 +141,13 @@ final class ClientTest extends TestCase
     /**
      * test capture error
      *
-     * @covers \Connehito\CakeSentry\Http\Client::capture()
      * @return void
      */
     public function testCaptureError()
     {
         $subject = new Client([]);
         $sentryClientP = $this->prophesize(ClientInterface::class);
-        $sentryClientP->getOptions()
-            ->shouldBeCalled()
-            ->willReturn(new Options());
+        $sentryClientP->getOptions()->shouldBeCalled()->willReturn(new Options());
         $sentryClientP
             ->captureMessage(
                 'some error',
@@ -168,7 +167,6 @@ final class ClientTest extends TestCase
     /**
      * test capture error fill breadcrumbs
      *
-     * @covers \Connehito\CakeSentry\Http\Client::capture()
      * @return void
      */
     public function testCaptureErrorBuildBreadcrumbs()
@@ -181,9 +179,7 @@ final class ClientTest extends TestCase
 
         $subject = new Client([]);
         $sentryClientP = $this->prophesize(ClientInterface::class);
-        $sentryClientP->getOptions()
-            ->shouldBeCalled()
-            ->willReturn(new Options());
+        $sentryClientP->getOptions()->shouldBeCalled()->willReturn(new Options());
         $sentryClientP
             ->captureMessage(
                 Argument::any(),
@@ -272,9 +268,6 @@ final class ClientTest extends TestCase
         );
 
         $this->assertTrue($called);
-        $this->assertSame(
-            $lastEventId,
-            $actualLastEventId
-        );
+        $this->assertSame($lastEventId, $actualLastEventId);
     }
 }
