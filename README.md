@@ -121,6 +121,7 @@ ex)
 ```php
 use Cake\Event\Event;
 use Cake\Event\EventListenerInterface;
+use Cake\Http\ServerRequest;
 use Cake\Http\ServerRequestFactory;
 use Sentry\State\Scope;
 
