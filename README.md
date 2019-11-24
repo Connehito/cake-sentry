@@ -121,6 +121,11 @@ ex)
 ```php
 use Cake\Event\Event;
 use Cake\Event\EventListenerInterface;
+use Cake\Http\ServerRequest;
+use Cake\Http\ServerRequestFactory;
+use Sentry\State\Scope;
+
+use function Sentry\configureScope as sentryConfigureScope;
 
 class SentryErrorContext implements EventListenerInterface
 {
