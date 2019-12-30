@@ -8,8 +8,8 @@ CakePHP integration for Sentry.
 [![License](https://poser.pugx.org/connehito/cake-sentry/license)](https://packagist.org/packages/connehito/cake-sentry)
 
 ## Requirements
-- PHP 7.1+
-- CakePHP 3.6+
+- PHP 7.2+
+- CakePHP 4.0+
 - and [Sentry](https://sentry.io) account
 
 

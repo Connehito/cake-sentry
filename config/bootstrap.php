@@ -5,6 +5,7 @@ use Cake\Core\Configure;
 use Cake\Log\Log;
 use Connehito\CakeSentry\Error\ConsoleErrorHandler;
 use Connehito\CakeSentry\Error\ErrorHandler;
+use Connehito\CakeSentry\Error\ErrorLogger;
 use Connehito\CakeSentry\Log\Engine\SentryLog;
 
 $isCli = PHP_SAPI === 'cli';
@@ -21,3 +22,4 @@ $errorLogConfig = Log::getConfig('error');
 $errorLogConfig['className'] = SentryLog::class;
 Log::drop('error');
 Log::setConfig('error', $errorLogConfig);
+Configure::write('Error.errorLogger', ErrorLogger::class);
