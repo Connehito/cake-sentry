@@ -65,6 +65,14 @@ final class ClientTest extends TestCase
     public function testSetupClientSetOptions()
     {
         Configure::write('Sentry.excluded_exceptions', [NotFoundException::class]);
+        $beforeSend = (new class
+        {
+            public function __invoke()
+            {
+                return true;
+            }
+        });
+        Configure::write('Sentry.before_send', $beforeSend);
 
         $subject = new Client([]);
         $options = $subject->getHub()->getClient()->getOptions();
@@ -72,6 +80,10 @@ final class ClientTest extends TestCase
         $this->assertSame(
             [NotFoundException::class],
             $options->getExcludedExceptions()
+        );
+        $this->assertSame(
+            get_class($beforeSend),
+            get_class($options->getBeforeSendCallback())
         );
     }
 
