@@ -19,7 +19,9 @@ matrix:
     - php: 7.3
       env: PREFER_LOWEST="" TEST=1 CODECOV=1 STAN=0
     - php: 7.4
-      env: PREFER_LOWEST="" TEST=1 CODECOV=0 STAN=1
+      env: PREFER_LOWEST="" TEST=1 CODECOV=0 STAN=0
+    - php: 7.4
+      env: PREFER_LOWEST="" TEST=0 CODECOV=0 STAN=1
 
 before_script:
   - phpenv config-rm xdebug.ini
