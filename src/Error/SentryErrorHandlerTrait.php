@@ -33,7 +33,7 @@ trait SentryErrorHandlerTrait
      * @param array $data Array of error data.
      * @return bool
      */
-    protected function _logError($level, $data)
+    protected function _logError($level, array $data): bool
     {
         $error = new ErrorException($data['description'], 0, $data['code'], $data['file'], $data['line']);
 
