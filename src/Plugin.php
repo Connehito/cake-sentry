@@ -12,7 +12,7 @@ class Plugin extends BasePlugin
     /**
      * {@inheritDoc}
      */
-    public function middleware(MiddlewareQueue $middleware)
+    public function middleware(MiddlewareQueue $middleware): MiddlewareQueue
     {
         $middleware = parent::middleware($middleware);
         $middleware->insertAfter(
