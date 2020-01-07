@@ -8,13 +8,13 @@ use Cake\Error\PHP7ErrorException;
 use Cake\Event\Event;
 use Cake\Event\EventDispatcherTrait;
 use Cake\Utility\Hash;
-use function Sentry\init;
 use Psr\Http\Message\ServerRequestInterface;
 use RuntimeException;
 use Sentry\Breadcrumb;
 use Sentry\SentrySdk;
 use Sentry\Severity;
 use Sentry\State\Hub;
+use function Sentry\init;
 
 class Client
 {
