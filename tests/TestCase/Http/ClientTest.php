@@ -7,7 +7,9 @@ use Cake\Event\Event;
 use Cake\Event\EventManager;
 use Cake\Http\Exception\NotFoundException;
 use Cake\TestSuite\TestCase;
+use Closure;
 use Connehito\CakeSentry\Http\Client;
+use Exception;
 use Prophecy\Argument;
 use ReflectionProperty;
 use RuntimeException;
@@ -102,7 +104,7 @@ final class ClientTest extends TestCase
             ->getBeforeSendCallback();
 
         $this->assertInstanceOf(
-            \Closure::class,
+            Closure::class,
             $actual
         );
     }
@@ -242,7 +244,7 @@ final class ClientTest extends TestCase
         $subject->capture(
             'info',
             'some error',
-            ['exception' => new \Exception()]
+            ['exception' => new Exception()]
         );
 
         $this->assertTrue($called);
@@ -276,7 +278,7 @@ final class ClientTest extends TestCase
         $subject->capture(
             'info',
             'some error',
-            ['exception' => new \Exception()]
+            ['exception' => new Exception()]
         );
 
         $this->assertTrue($called);
