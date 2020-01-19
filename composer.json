@@ -22,7 +22,8 @@
     },
     "autoload-dev": {
         "psr-4": {
-            "Connehito\\CakeSentry\\Test\\": "tests/"
+            "Connehito\\CakeSentry\\Test\\": "tests/",
+            "App\\": "tests/test_app/app/src/"
         }
     },
     "scripts": {

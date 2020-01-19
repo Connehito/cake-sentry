@@ -48,7 +48,7 @@ final class SentryErrorHandlerTraitTest extends TestCase
     /**
      * {@inheritdoc}
      */
-    public function setUp()
+    public function setUp(): void
     {
         parent::setUp();
         $this->subject = new Stub();
