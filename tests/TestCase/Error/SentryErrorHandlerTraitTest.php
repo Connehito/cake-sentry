@@ -7,7 +7,7 @@ use Cake\TestSuite\TestCase;
 use Connehito\CakeSentry\Error\SentryErrorHandlerTrait;
 use ErrorException;
 use Exception;
-use PHPUnit_Framework_MockObject_MockObject;
+use PHPUnit\Framework\MockObject\MockObject;
 use Psr\Log\LoggerInterface;
 use ReflectionMethod;
 use RuntimeException;
@@ -42,7 +42,7 @@ final class SentryErrorHandlerTraitTest extends TestCase
     /** @var Stub test subject */
     private $subject;
 
-    /** @var PHPUnit_Framework_MockObject_MockObject LoggerInterface */
+    /** @var MockObject LoggerInterface */
     private $logger;
 
     /**

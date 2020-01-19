@@ -7,14 +7,14 @@ use Cake\Http\ServerRequestFactory;
 use Cake\Log\Log;
 use Cake\TestSuite\TestCase;
 use Connehito\CakeSentry\Error\Middleware\ErrorHandlerMiddleware;
-use PHPUnit_Framework_MockObject_MockObject;
+use PHPUnit\Framework\MockObject\MockObject;
 use Psr\Log\LoggerInterface;
 use RuntimeException;
 use App\Http\TestRequestHandler;
 
 final class ErrorHandlerMiddlewareTest extends TestCase
 {
-    /** @var PHPUnit_Framework_MockObject_MockObject LoggerInterface */
+    /** @var MockObject LoggerInterface */
     private $logger;
 
     /**
