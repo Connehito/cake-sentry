@@ -12,9 +12,9 @@ if (!$isCli && strpos((env('argv')[0] ?? ''), '/phpunit') !== false) {
     $isCli = true;
 }
 if ($isCli) {
-    (new ConsoleErrorHandler(Configure::read('Error')))->register();
+    (new ConsoleErrorHandler(Configure::read('Error', [])))->register();
 } else {
-    (new ErrorHandler(Configure::read('Error')))->register();
+    (new ErrorHandler(Configure::read('Error', [])))->register();
 }
 
 $errorLogConfig = Log::getConfig('error');
