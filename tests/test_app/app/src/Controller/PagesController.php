@@ -46,7 +46,7 @@ class PagesController extends AppController
         $message = $this->getRequest()->getQuery('message', 'error!');
         trigger_error($message, $gottenError);
 
-        $this->set(compact('gottenError', 'errorName', 'errorCode', 'message', ));
+        $this->set(compact('gottenError', 'errorName', 'errorCode', 'message'));
 
         $this->setResponse(
             $this->getResponse()->withStatus($errorCode)
