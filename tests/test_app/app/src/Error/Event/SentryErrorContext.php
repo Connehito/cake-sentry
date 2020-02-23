@@ -17,7 +17,7 @@ class SentryErrorContext implements EventListenerInterface
         return [
             'CakeSentry.Client.afterSetup' => 'setServerContext',
             'CakeSentry.Client.beforeCapture' => 'setContext',
-            //'CakeSentry.Client.afterCapture' => 'callbackAfterCapture(',
+            //'CakeSentry.Client.afterCapture' => 'callbackAfterCapture',
         ];
     }
 

@@ -108,12 +108,6 @@ class Client
         if (!Hash::check($config, 'dsn')) {
             throw new RuntimeException('Sentry DSN not provided.');
         }
-        if (!Hash::get($config, 'before_send')) {
-            $config['before_send'] = function () {
-                $event = new Event('CakeSentry.Client.afterCapture', $this, func_get_args());
-                $this->getEventManager()->dispatch($event);
-            };
-        }
 
         init($config);
         $this->hub = SentrySdk::getCurrentHub();
