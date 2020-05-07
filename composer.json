@@ -12,7 +12,7 @@
         "cakephp/cakephp-codesniffer": "^3.0",
         "jangregor/phpstan-prophecy": "^0.4.2",
         "phpstan/phpstan": "@stable",
-        "phpunit/phpunit": "^8.0"
+        "phpunit/phpunit": "^8.2.3"
     },
     "license": "MIT",
     "autoload": {
