@@ -3,18 +3,18 @@
 namespace Connehito\CakeSentry\Test\TestCase\Error\Middleware;
 
 use Cake\Core\Configure;
-use Cake\Http\Response;
 use Cake\Http\ServerRequestFactory;
 use Cake\Log\Log;
 use Cake\TestSuite\TestCase;
 use Connehito\CakeSentry\Error\Middleware\ErrorHandlerMiddleware;
-use PHPUnit_Framework_MockObject_MockObject;
+use PHPUnit\Framework\MockObject\MockObject;
 use Psr\Log\LoggerInterface;
 use RuntimeException;
+use App\Http\TestRequestHandler;
 
 final class ErrorHandlerMiddlewareTest extends TestCase
 {
-    /** @var PHPUnit_Framework_MockObject_MockObject LoggerInterface */
+    /** @var MockObject LoggerInterface */
     private $logger;
 
     /**
@@ -22,7 +22,7 @@ final class ErrorHandlerMiddlewareTest extends TestCase
      *
      * @return void
      */
-    public function setUp()
+    public function setUp(): void
     {
         parent::setUp();
         $this->logger = $this->getMockBuilder(LoggerInterface::class)->getMock();
@@ -39,18 +39,22 @@ final class ErrorHandlerMiddlewareTest extends TestCase
      */
     public function testLogException()
     {
-        $request = ServerRequestFactory::fromGlobals();
-        $middleware = new ErrorHandlerMiddleware();
-        $response = new Response();
+        Configure::write('App.paths.templates', [
+            TEST_APP . 'app' . DS . 'templates' . DS,
+            ROOT . DS . 'vendor' . DS . 'cakephp' . DS . 'cakephp' . DS . 'templates' . DS,
+        ]);
 
-        $exception = new RuntimeException('some exception');
+        $request = ServerRequestFactory::fromGlobals();
+        $testHandler = new TestRequestHandler(function($req){
+            throw new RuntimeException('some exception');
+        });
+
         $this->logger->expects($this->once())
             ->method('log')
             ->with('error');
 
-        $middleware($request, $response, function ($request, $response) use ($exception) {
-            throw $exception;
-        });
+        $middleware = new ErrorHandlerMiddleware(Configure::read('Error', []));
+        $middleware->process($request, $testHandler);
     }
 
     /**
@@ -61,15 +65,20 @@ final class ErrorHandlerMiddlewareTest extends TestCase
     public function testLogExceptionSkipLog()
     {
         Configure::write('Error.skipLog', [RuntimeException::class]);
+        Configure::write('App.paths.templates', [
+            TEST_APP . 'app' . DS . 'templates' . DS,
+            ROOT . DS . 'vendor' . DS . 'cakephp' . DS . 'cakephp' . DS . 'templates' . DS,
+        ]);
 
         $request = ServerRequestFactory::fromGlobals();
-        $middleware = new ErrorHandlerMiddleware();
-        $response = new Response();
-
-        $this->logger->expects($this->never())->method('log');
-
-        $middleware($request, $response, function ($request, $response) {
+        $testHandler = new TestRequestHandler(function($req){
             throw new RuntimeException('some exception');
         });
+
+        $this->logger->expects($this->never())
+             ->method('log');
+
+        $middleware = new ErrorHandlerMiddleware(Configure::read('Error', []));
+        $middleware->process($request, $testHandler);
     }
 }

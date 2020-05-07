@@ -12,7 +12,7 @@
         "cakephp/cakephp-codesniffer": "^3.0",
         "jangregor/phpstan-prophecy": "^0.4.2",
         "phpstan/phpstan": "@stable",
-        "phpunit/phpunit": "^6.4"
+        "phpunit/phpunit": "^8.0"
     },
     "license": "MIT",
     "autoload": {
@@ -22,7 +22,8 @@
     },
     "autoload-dev": {
         "psr-4": {
-            "Connehito\\CakeSentry\\Test\\": "tests/"
+            "Connehito\\CakeSentry\\Test\\": "tests/",
+            "App\\": "tests/test_app/app/src/"
         }
     },
     "scripts": {

@@ -3,3 +3,4 @@
 /logs
 composer.lock
 .idea
+.phpunit.result.cache

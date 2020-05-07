@@ -16,7 +16,7 @@ CakePHP integration for Sentry.
 ## Installation
 ### With composer install.
 ```
-composer require connehito/cake-sentry
+composer require connehito/cake-sentry:^3.0
 ```
 
 ## Usage
@@ -69,7 +69,7 @@ ex)
 ```
 
 ref: CakePHP Cookbook  
-https://book.cakephp.org/3.0/en/development/errors.html#error-exception-configuration
+https://book.cakephp.org/4/en/development/errors.html#error-exception-configuration
 
 ### Set Options
 All configure written in `Configure::write('Sentry')` will be passed to `Sentry\init()`.  

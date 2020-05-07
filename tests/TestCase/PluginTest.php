@@ -20,9 +20,10 @@ final class PluginTest extends TestCase
         $middleware = new MiddlewareQueue();
         (new Plugin())->middleware($middleware);
 
+        $middleware->seek(0);
         $this->assertInstanceOf(
             ErrorHandlerMiddleware::class,
-            $middleware->get(0),
+            $middleware->current(),
             'Middleware is not inserted to queue'
         );
     }
@@ -41,9 +42,10 @@ final class PluginTest extends TestCase
         ]);
         (new Plugin())->middleware($middleware);
 
+        $middleware->seek($middleware->count() - 1);
         $this->assertInstanceOf(
             ErrorHandlerMiddleware::class,
-            $middleware->get($middleware->count() - 1),
+            $middleware->current(),
             'Middleware is not inserted to queue last'
         );
     }
@@ -64,9 +66,10 @@ final class PluginTest extends TestCase
         ]);
         (new Plugin())->middleware($middleware);
 
+        $middleware->seek(3);
         $this->assertInstanceOf(
             ErrorHandlerMiddleware::class,
-            $middleware->get(3),
+            $middleware->current(),
             'Middleware is not inserted to queue after default error handler'
         );
     }

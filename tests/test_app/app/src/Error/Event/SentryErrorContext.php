@@ -12,7 +12,7 @@ use function Sentry\configureScope as sentryConfigureScope;
 
 class SentryErrorContext implements EventListenerInterface
 {
-    public function implementedEvents()
+    public function implementedEvents(): array
     {
         return [
             'CakeSentry.Client.afterSetup' => 'setServerContext',
