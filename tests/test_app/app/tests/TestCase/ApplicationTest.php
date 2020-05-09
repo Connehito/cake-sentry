@@ -14,7 +14,7 @@ declare(strict_types=1);
  * @since         3.3.0
  * @license       https://opensource.org/licenses/mit-license.php MIT License
  */
-namespace App\Test\TestCase;
+namespace TestApp\Test\TestCase;
 
 use App\Application;
 use Cake\Error\Middleware\ErrorHandlerMiddleware;

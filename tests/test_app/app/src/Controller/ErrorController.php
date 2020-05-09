@@ -14,7 +14,7 @@ declare(strict_types=1);
  * @since         3.3.4
  * @license       https://opensource.org/licenses/mit-license.php MIT License
  */
-namespace App\Controller;
+namespace TestApp\Controller;
 
 use Cake\Event\EventInterface;
 
