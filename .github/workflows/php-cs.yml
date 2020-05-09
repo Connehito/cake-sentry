@@ -1,0 +1,23 @@
+name: PHP Code Sniffer
+on:
+  pull_request:
+    paths: ["**.php"]
+
+jobs:
+  phpcs:
+    runs-on: ubuntu-latest
+    steps:
+      -
+        uses: actions/checkout@v2
+      -
+        name: "Setup PHP"
+        uses: shivammathur/setup-php@v2
+        with:
+          coverage: none
+          php-version: "7.4"
+      -
+        name: "Install phpcs"
+        run: "composer require squizlabs/php_codesniffer"
+      -
+        name: "Run phpcs"
+        run: "composer cs-check"

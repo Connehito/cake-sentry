@@ -45,7 +45,6 @@ script:
   - if [[ $TEST = 1 && $CODECOV = 1 ]]; then phpdbg -qrr vendor/bin/phpunit --coverage-clover=clover.xml; fi
   - |
     if [[ $STAN = 1 ]]; then
-      composer cs-check
       vendor/bin/phpstan analyse
     fi
 
