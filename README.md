@@ -8,15 +8,15 @@ CakePHP integration for Sentry.
 [![License](https://poser.pugx.org/connehito/cake-sentry/license)](https://packagist.org/packages/connehito/cake-sentry)
 
 ## Requirements
-- PHP 7.1+
-- CakePHP 3.6+
+- PHP 7.2+
+- CakePHP 4.0+
 - and [Sentry](https://sentry.io) account
 
 
 ## Installation
 ### With composer install.
 ```
-composer require connehito/cake-sentry
+composer require connehito/cake-sentry:^3.0
 ```
 
 ## Usage
@@ -69,7 +69,7 @@ ex)
 ```
 
 ref: CakePHP Cookbook  
-https://book.cakephp.org/3.0/en/development/errors.html#error-exception-configuration
+https://book.cakephp.org/4/en/development/errors.html#error-exception-configuration
 
 ### Set Options
 All configure written in `Configure::write('Sentry')` will be passed to `Sentry\init()`.  

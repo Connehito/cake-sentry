@@ -4,7 +4,6 @@ namespace Connehito\CakeSentry\Http;
 
 use Cake\Core\Configure;
 use Cake\Core\InstanceConfigTrait;
-use Cake\Error\PHP7ErrorException;
 use Cake\Event\Event;
 use Cake\Event\EventDispatcherTrait;
 use Cake\Utility\Hash;
@@ -66,9 +65,6 @@ class Client
 
         $exception = Hash::get($context, 'exception');
         if ($exception) {
-            if ($exception instanceof PHP7ErrorException) {
-                $exception = $exception->getError();
-            }
             $lastEventId = $this->hub->captureException($exception);
         } else {
             $stacks = array_slice(debug_backtrace(DEBUG_BACKTRACE_PROVIDE_OBJECT), 3);
@@ -102,7 +98,7 @@ class Client
      *
      * @return void
      */
-    protected function setupClient()
+    protected function setupClient(): void
     {
         $config = (array)Configure::read('Sentry');
         if (!Hash::check($config, 'dsn')) {

@@ -4,7 +4,7 @@
     "type": "cakephp-plugin",
     "require": {
         "php": "^7.1",
-        "cakephp/cakephp": "^3.6",
+        "cakephp/cakephp": "^4.0",
         "php-http/guzzle6-adapter": "^v1.1.1|^v2.0",
         "sentry/sentry": "^2.2"
     },
@@ -12,7 +12,7 @@
         "cakephp/cakephp-codesniffer": "^3.0",
         "jangregor/phpstan-prophecy": "^0.4.2",
         "phpstan/phpstan": "@stable",
-        "phpunit/phpunit": "^6.4"
+        "phpunit/phpunit": "^8.5.0"
     },
     "license": "MIT",
     "autoload": {
@@ -22,7 +22,8 @@
     },
     "autoload-dev": {
         "psr-4": {
-            "Connehito\\CakeSentry\\Test\\": "tests/"
+            "Connehito\\CakeSentry\\Test\\": "tests/",
+            "App\\": "tests/test_app/app/src/"
         }
     },
     "scripts": {

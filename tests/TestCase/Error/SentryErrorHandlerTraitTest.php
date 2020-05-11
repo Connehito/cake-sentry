@@ -7,10 +7,12 @@ use Cake\TestSuite\TestCase;
 use Connehito\CakeSentry\Error\SentryErrorHandlerTrait;
 use ErrorException;
 use Exception;
-use PHPUnit_Framework_MockObject_MockObject;
+use PHPUnit\Framework\MockObject\MockObject;
+use Psr\Http\Message\ServerRequestInterface;
 use Psr\Log\LoggerInterface;
 use ReflectionMethod;
 use RuntimeException;
+use Throwable;
 
 /**
  * Testing stub.
@@ -31,9 +33,12 @@ final class Stub
     /** @var array */
     protected $_defaultConfig = [];
 
-    protected function _getMessage(Exception $exception)
+    public $logExceptionCalledWithParams = null;
+
+    protected function logException(Throwable $exception, ?ServerRequestInterface $request = null)
     {
-        return sprintf('[%s]%s', get_class($exception), $exception->getMessage());
+        $this->logExceptionCalledWithParams = [$exception, $request];
+        return true;
     }
 }
 
@@ -42,21 +47,16 @@ final class SentryErrorHandlerTraitTest extends TestCase
     /** @var Stub test subject */
     private $subject;
 
-    /** @var PHPUnit_Framework_MockObject_MockObject LoggerInterface */
+    /** @var MockObject LoggerInterface */
     private $logger;
 
     /**
      * {@inheritdoc}
      */
-    public function setUp()
+    public function setUp(): void
     {
         parent::setUp();
         $this->subject = new Stub();
-        $this->logger = $this->getMockBuilder(LoggerInterface::class)->getMock();
-        Log::reset();
-        Log::setConfig('error_test', [
-            'engine' => $this->logger
-        ]);
     }
 
     /**
@@ -64,42 +64,25 @@ final class SentryErrorHandlerTraitTest extends TestCase
      *
      * @return void
      */
-    public function testLogError()
+    public function testLogError(): void
     {
         $method = new ReflectionMethod(Stub::class, '_logError');
         $method->setAccessible(true);
 
         $error = [LOG_NOTICE, ['description' => 'some error', 'code' => 0, 'file' => __FILE__, 'line' => __LINE__]];
-        $expected = new ErrorException(
-            $error[1]['description'],
-            0,
-            $error[1]['code'],
-            $error[1]['file'],
-            $error[1]['line']
-        );
-        $this->logger->expects($this->once())
-            ->method('log')
-            ->with('notice', '[ErrorException]some error', ['exception' => $expected, 'scope' => []]);
 
-        $method->invoke($this->subject, $error[0], $error[1]);
-    }
+        $result = $method->invoke($this->subject, $error[0], $error[1]);
 
-    /**
-     * test for _logException()
-     *
-     * @return void
-     */
-    public function testLogException()
-    {
-        $method = new ReflectionMethod(Stub::class, '_logException');
-        $method->setAccessible(true);
+        static::assertTrue($result);
+        static::assertNotNull($this->subject->logExceptionCalledWithParams);
 
-        $exception = new RuntimeException('something wrong.');
-        $scope = [];
-        $this->logger->expects($this->once())
-            ->method('log')
-            ->with('error', '[RuntimeException]something wrong.', compact('exception', 'scope'));
-
-        $method->invoke($this->subject, $exception);
+        /** @var ErrorException $exception */
+        [$exception, $request] = $this->subject->logExceptionCalledWithParams;
+        static::assertEquals($error[1]['description'], $exception->getMessage());
+        static::assertEquals(0, $exception->getCode());
+        static::assertEquals($error[1]['code'], $exception->getSeverity());
+        static::assertEquals($error[1]['file'], $exception->getFile());
+        static::assertEquals($error[1]['line'], $exception->getLine());
+        static::assertNull($request);
     }
 }
