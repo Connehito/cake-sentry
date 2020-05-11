@@ -1,9 +1,7 @@
 <?php
 declare(strict_types=1);
 
-
 namespace Connehito\CakeSentry\Error;
-
 
 use Cake\Error\ErrorLogger as CakeErrorLogger;
 use Cake\Log\Log;
