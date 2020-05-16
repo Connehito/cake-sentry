@@ -27,7 +27,7 @@
     },
     "scripts": {
         "test": "phpunit",
-        "cs-check": "phpcs --colors -p ./src"
+        "cs-check": "phpcs --colors -p ./src ./tests/TestCase"
     },
     "config": {
         "sort-packages": true
