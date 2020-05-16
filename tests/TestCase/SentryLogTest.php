@@ -23,9 +23,7 @@ final class SentryLogTest extends TestCase
         Configure::write('Sentry.dsn', 'https://user:pass@example.com/yourproject');
         $subject = new SentryLog([]);
 
-        $clientMock = $this->getMockBuilder(Client::class)
-            ->disableOriginalConstructor()
-            ->getMock();
+        $clientMock = $this->createMock(Client::class);
         $this->subject = $subject;
 
         $clientProp = $this->getClientProp();

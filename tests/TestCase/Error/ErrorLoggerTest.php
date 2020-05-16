@@ -3,6 +3,7 @@
 namespace Connehito\CakeSentry\Test\TestCase\Error;
 
 use Cake\Core\Configure;
+use Cake\Http\ServerRequest;
 use Cake\Http\ServerRequestFactory;
 use Cake\Log\Log;
 use Cake\TestSuite\TestCase;
@@ -14,7 +15,7 @@ use RuntimeException;
 final class ErrorLoggerTest extends TestCase
 {
     /** @var MockObject LoggerInterface */
-    private $logger;
+    private $subject;
 
     /**
      * setup
@@ -24,11 +25,10 @@ final class ErrorLoggerTest extends TestCase
     public function setUp(): void
     {
         parent::setUp();
-        $this->logger = $this->getMockBuilder(LoggerInterface::class)->getMock();
+
+        $this->subject = $this->getMockBuilder(LoggerInterface::class)->getMock();
         Log::reset();
-        Log::setConfig('error_test', [
-            'engine' => $this->logger
-        ]);
+        Log::setConfig('error_test', ['engine' => $this->subject]);
     }
 
     /**
@@ -36,14 +36,23 @@ final class ErrorLoggerTest extends TestCase
      *
      * @return void
      */
-    public function testLogException(): void
+    public function testLog(): void
     {
-        $this->logger->expects($this->once())
-            ->method('log')
-            ->with('error');
+        $thrownException = new RuntimeException('some exception');
 
-        $middleware = new ErrorLogger(Configure::read('Error', []));
-        $middleware->log(new RuntimeException('some exception'), ServerRequestFactory::fromGlobals());
+        $this->subject->expects($this->once())
+            ->method('log')
+            ->with(
+                'error',
+                $this->stringContains('some exception'),
+                $this->callback(function ($args) use ($thrownException) {
+                    return $args['exception'] === $thrownException &&
+                        $args['request'] instanceof ServerRequest;
+                })
+            );
+
+        $logger = new ErrorLogger([]);
+        $logger->log($thrownException, ServerRequestFactory::fromGlobals());
     }
 
     /**
@@ -51,18 +60,13 @@ final class ErrorLoggerTest extends TestCase
      *
      * @return void
      */
-    public function testLogExceptionSkipLog(): void
+    public function testLogSkipLog(): void
     {
         Configure::write('Error.skipLog', [RuntimeException::class]);
-        Configure::write('App.paths.templates', [
-            TEST_APP . 'app' . DS . 'templates' . DS,
-            ROOT . DS . 'vendor' . DS . 'cakephp' . DS . 'cakephp' . DS . 'templates' . DS,
-        ]);
 
-        $this->logger->expects($this->never())
-             ->method('log');
+        $this->subject->expects($this->never())->method('log');
 
-        $middleware = new ErrorLogger(Configure::read('Error', []));
+        $middleware = new ErrorLogger(Configure::readOrFail('Error'));
         $middleware->log(new RuntimeException('some exception'), ServerRequestFactory::fromGlobals());
     }
 }

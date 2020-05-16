@@ -2,63 +2,15 @@
 
 namespace Connehito\CakeSentry\Test\TestCase\Error;
 
-use Cake\Log\Log;
+use Cake\Error\ErrorHandler;
 use Cake\TestSuite\TestCase;
 use Connehito\CakeSentry\Error\SentryErrorHandlerTrait;
 use ErrorException;
-use Exception;
-use PHPUnit\Framework\MockObject\MockObject;
 use Psr\Http\Message\ServerRequestInterface;
-use Psr\Log\LoggerInterface;
-use ReflectionMethod;
-use RuntimeException;
 use Throwable;
-
-/**
- * Testing stub.
- */
-final class Stub
-{
-    use SentryErrorHandlerTrait;
-
-    /**
-     * Options for this instance.
-     *
-     * @var array
-     */
-    protected $_options = [
-        'log' => true,
-    ];
-
-    /** @var array */
-    protected $_defaultConfig = [];
-
-    public $logExceptionCalledWithParams = null;
-
-    protected function logException(Throwable $exception, ?ServerRequestInterface $request = null)
-    {
-        $this->logExceptionCalledWithParams = [$exception, $request];
-        return true;
-    }
-}
 
 final class SentryErrorHandlerTraitTest extends TestCase
 {
-    /** @var Stub test subject */
-    private $subject;
-
-    /** @var MockObject LoggerInterface */
-    private $logger;
-
-    /**
-     * {@inheritdoc}
-     */
-    public function setUp(): void
-    {
-        parent::setUp();
-        $this->subject = new Stub();
-    }
-
     /**
      * test for _logError()
      *
@@ -66,23 +18,55 @@ final class SentryErrorHandlerTraitTest extends TestCase
      */
     public function testLogError(): void
     {
-        $method = new ReflectionMethod(Stub::class, '_logError');
-        $method->setAccessible(true);
+        $errorSeverity = E_USER_WARNING;
+        $errorMessage = 'some error';
+        $errorFile = __FILE__;
+        $errorLine = __LINE__;
+        $subject = $this->getSubject();
 
-        $error = [LOG_NOTICE, ['description' => 'some error', 'code' => 0, 'file' => __FILE__, 'line' => __LINE__]];
+        $subject->handleError($errorSeverity, $errorMessage, $errorFile, $errorLine);
 
-        $result = $method->invoke($this->subject, $error[0], $error[1]);
+        /** @var ErrorException $actual */
+        $actual = $subject->wrappedException;
 
-        static::assertTrue($result);
-        static::assertNotNull($this->subject->logExceptionCalledWithParams);
+        $this->assertInstanceOf(ErrorException::class, $actual);
+        $this->assertSame($errorMessage, $actual->getMessage());
+        $this->assertSame(0, $actual->getCode());
+        $this->assertSame($errorSeverity, $actual->getSeverity());
+        $this->assertSame($errorFile, $actual->getFile());
+        $this->assertSame($errorLine, $actual->getLine());
+    }
 
-        /** @var ErrorException $exception */
-        [$exception, $request] = $this->subject->logExceptionCalledWithParams;
-        static::assertEquals($error[1]['description'], $exception->getMessage());
-        static::assertEquals(0, $exception->getCode());
-        static::assertEquals($error[1]['code'], $exception->getSeverity());
-        static::assertEquals($error[1]['file'], $exception->getFile());
-        static::assertEquals($error[1]['line'], $exception->getLine());
-        static::assertNull($request);
+    /**
+     * Get instance of SentryErrorHandlerTrait implementation
+     */
+    private function getSubject()
+    {
+        $subject = new class extends ErrorHandler
+        {
+            use SentryErrorHandlerTrait {
+                _logError as originalLogError;
+            }
+
+            public $wrappedException;
+
+            /**
+             * Implement a non-functional method to avoid echoing in running test.
+             * {@inheritDoc}
+             */
+            protected function _displayError(array $error, bool $debug): void
+            {
+                // do nothing
+            }
+
+            public function logException(Throwable $exception, ?ServerRequestInterface $request = null): bool
+            {
+                $this->wrappedException = $exception;
+
+                return false;
+            }
+        };
+
+        return $subject;
     }
 }
