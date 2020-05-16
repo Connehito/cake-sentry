@@ -37,12 +37,14 @@ use Cake\Core\Configure\Engine\PhpConfig;
 use Cake\Datasource\ConnectionManager;
 use Cake\Error\ConsoleErrorHandler;
 use Cake\Error\ErrorHandler;
+use Cake\Event\EventManager;
 use Cake\Http\ServerRequest;
 use Cake\Log\Log;
 use Cake\Mailer\Mailer;
 use Cake\Mailer\TransportFactory;
 use Cake\Routing\Router;
 use Cake\Utility\Security;
+use TestApp\Error\Event\SentryErrorContext;
 
 /*
  * See https://github.com/josegonzalez/php-dotenv for API details.
@@ -213,3 +215,5 @@ ServerRequest::addDetector('tablet', function ($request) {
 //Inflector::rules('irregular', ['red' => 'redlings']);
 //Inflector::rules('uninflected', ['dontinflectme']);
 //Inflector::rules('transliteration', ['/å/' => 'aa']);
+
+EventManager::instance()->on(new SentryErrorContext());
