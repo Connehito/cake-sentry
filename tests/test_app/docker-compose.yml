@@ -1,0 +1,15 @@
+version: "3.7"
+services:
+  test-app:
+    volumes:
+      - ../../src:/dist/src
+      - ../../config:/dist/config
+      - ../../composer.json:/dist/composer.json
+      - ../..:/app
+    ports:
+      - "8080:80"
+    container_name: cake-sentry-test-app
+    build:
+      context: ../..
+      dockerfile: ./tests/test_app/Dockerfile
+    command: bash -c "/app/tests/test_app/app/bin/cake server -H 0.0.0.0 -p 80"
