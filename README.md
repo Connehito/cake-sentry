@@ -5,6 +5,7 @@ CakePHP integration for Sentry.
 [![Total Downloads](https://poser.pugx.org/connehito/cake-sentry/downloads)](https://packagist.org/packages/connehito/cake-sentry)
 [![Build Status](https://travis-ci.org/Connehito/cake-sentry.svg?branch=master)](https://travis-ci.org/Connehito/cake-sentry)
 [![codecov](https://codecov.io/gh/connehito/cake-sentry/branch/master/graph/badge.svg)](https://codecov.io/gh/connehito/cake-sentry)
+![PHP Code Sniffer](https://github.com/Connehito/cake-sentry/workflows/PHP%20Code%20Sniffer/badge.svg)
 [![License](https://poser.pugx.org/connehito/cake-sentry/license)](https://packagist.org/packages/connehito/cake-sentry)
 
 ## Requirements
@@ -12,6 +13,7 @@ CakePHP integration for Sentry.
 - CakePHP 4.0+
 - and [Sentry](https://sentry.io) account
 
+💡 For CakePHP3.x, use [2.x branch](https://github.com/Connehito/cake-sentry/tree/2.x).
 
 ## Installation
 ### With composer install.
@@ -45,15 +47,19 @@ public function bootstrap()
 
 Or use cake command.
 ```
-bin/cake plugin load Connehito/CakeSentry --bootstrap
+bin/cake plugin load Connehito/CakeSentry
 ```
 
 That's all! :tada:
 
+NOTE:  
+If the events(error/exception) don't be captured in Sentry, try changing the order in which the plugins are loaded.  
+It is recommended to load this plugin after running `BaseApplication::bootstrap()` and loading other plugins.
+
 ### Advanced Usage
 
 #### Ignore noisy exceptions
-You can filter out exceptions that make a fuss and harder to determine the issues to address(like PageNotFoundException)
+You can filter out exceptions that make a fuss and harder to determine the issues to address(like PageNotFoundException)  
 Set exceptions not to log in `Error.skipLog`.
 
 ex)
@@ -75,8 +81,8 @@ https://book.cakephp.org/4/en/development/errors.html#error-exception-configurat
 All configure written in `Configure::write('Sentry')` will be passed to `Sentry\init()`.  
 Please check Sentry's official document [about configuration](https://docs.sentry.io/error-reporting/configuration/?platform=php) and [about php-sdk's configuraion](https://docs.sentry.io/platforms/php/#php-specific-options).
 
-In addition to it, CakeSentry provides event hook to set dynamic values to options more easily if you need.
-Client dispatch `CakeSentry.Client.afterSetup` event before sending error to sentry.  
+In addition to it, CakeSentry provides event hook to set dynamic values to options more easily if you need.  
+Client dispatch `CakeSentry.Client.afterSetup` event before sending error to sentry.   
 Subscribe the event with your logic.
 
 ex)
@@ -86,35 +92,36 @@ use Cake\Event\EventListenerInterface;
 
 class SentryOptionsContext implements EventListenerInterface
 {
-    public function implementedEvents()
+    public function implementedEvents(): array  
     {
         return [
             'CakeSentry.Client.afterSetup' => 'setServerContext',
         ];
     }
 
-    public function setServerContext(Event $event)
+    public function setServerContext(Event $event): void
     {
         /** @var Client $subject */
         $subject = $event->getSubject();
         $options = $subject->getHub()->getClient()->getOptions();
 
         $options->setEnvironment('test_app');
-        $options->setRelease('2.0.0@dev');
+        $options->setRelease('3.0.0@dev');
     }
 }
 ```
 
 And in `config/bootstrap.php`
 ```php
-EventManager::instance()->on(new SentryOptionsContext());
+\Cake\Event\EventManager::instance()->on(new SentryOptionsContext());
 ```
 
 ### Send more context
 
 Client dispatch `CakeSentry.Client.beforeCapture` event before sending error to sentry.  
-You can set context with EventListener.With facade `sentryConfigureScope()` etc, or with `$event->getContext()->getHub()` to access and set context.Calling Raven_Client's API or returning values, error context will be sent.
-Now, cake-sentry supports to get `Request` instance in implemented event via `$event->getSubject()->getRequest()`.
+You can set context with EventListener.With facade `sentryConfigureScope()` etc, or with `$event->getContext()->getHub()` to access and set context.  
+In case you want to handle the information in server request, cake-sentry supports to get `Request` instance in implemented event via `$event->getData('request')`.  
+
 See also [the section about context in offical doc](https://docs.sentry.io/enriching-error-data/context/?platform=php).
 
 ex)
@@ -129,14 +136,14 @@ use function Sentry\configureScope as sentryConfigureScope;
 
 class SentryErrorContext implements EventListenerInterface
 {
-    public function implementedEvents()
+    public function implementedEvents(): array
     {
         return [
             'CakeSentry.Client.beforeCapture' => 'setContext',
         ];
     }
 
-    public function setContext(Event $event)
+    public function setContext(Event $event): void
     {
         if (PHP_SAPI !== 'cli') {
             /** @var ServerRequest $request */
@@ -163,25 +170,25 @@ class SentryErrorContext implements EventListenerInterface
 
 And in `config/bootstrap.php`
 ```php
-EventManager::instance()->on(new SentryErrorContext());
+\Cake\Event\EventManager::instance()->on(new SentryErrorContext());
 ```
 
 ### Collecting User feedback
-In `CakeSentry.Client.afterCapture` event, you can get last event ID.
+In `CakeSentry.Client.afterCapture` event, you can get last event ID.  
 See also [offcial doc](https://docs.sentry.io/enriching-error-data/user-feedback/?platform=php#collecting-feedback).
 
 ex)
 ```php
 class SentryErrorContext implements EventListenerInterface
 {
-    public function implementedEvents()
+    public function implementedEvents(): array
     {
         return [
             'CakeSentry.Client.afterCapture' => 'callbackAfterCapture',
         ];
     }
 
-    public function callbackAfterCapture(Event $event)
+    public function callbackAfterCapture(Event $event): void
     {
         $lastEventId = $event->getData('lastEventId');
     }
