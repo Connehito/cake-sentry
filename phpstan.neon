@@ -7,4 +7,3 @@ parameters:
     level: 5
     autoload_files:
       - tests/bootstrap.php
-      - tests/TestCase/Error/SentryErrorHandlerTraitTest.php # for including stub class

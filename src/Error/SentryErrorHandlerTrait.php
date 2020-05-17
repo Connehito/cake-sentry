@@ -8,11 +8,6 @@ use ErrorException;
 
 trait SentryErrorHandlerTrait
 {
-    use InstanceConfigTrait;
-
-    /* @var Client */
-    protected $client;
-
     /**
      * Change error messages into ErrorException and write exception log.
      *
