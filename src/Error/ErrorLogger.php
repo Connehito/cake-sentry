@@ -12,11 +12,10 @@ class ErrorLogger extends CakeErrorLogger
 {
 
     /**
-     * Generate the error log message.
+     * {@inheritDoc}
      *
-     * @param Throwable $exception The exception to log a message for.
-     * @param ServerRequestInterface|null $request The current request if available.
-     * @return bool
+     * It is basically the same as the logic of `Cake\Error\ErrorLogger::log()` method.
+     * As a difference, this method passes an instance of request/exception to Log::error() as a context.
      */
     public function log(Throwable $exception, ?ServerRequestInterface $request = null): bool
     {

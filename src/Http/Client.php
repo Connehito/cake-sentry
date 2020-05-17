@@ -42,6 +42,7 @@ class Client
 
     /**
      * Accessor for current hub
+     *
      * @return Hub
      */
     public function getHub(): Hub
