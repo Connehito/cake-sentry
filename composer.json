@@ -1,6 +1,6 @@
 {
     "name": "connehito/cake-sentry",
-    "description": "Sentry plugin for CakePHP3",
+    "description": "Sentry plugin for CakePHP",
     "type": "cakephp-plugin",
     "require": {
         "php": "^7.2",
