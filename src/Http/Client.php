@@ -68,22 +68,22 @@ class Client
             $lastEventId = $this->hub->captureException($exception);
         } else {
             $stacks = array_slice(debug_backtrace(DEBUG_BACKTRACE_PROVIDE_OBJECT), 3);
+            if (method_exists(Severity::class, $level)) {
+                $severity = (Severity::class . '::' . $level)();
+            } else {
+                $severity = Severity::fromError($level);
+            }
             foreach ($stacks as $stack) {
                 $method = isset($stack['class']) ? "{$stack['class']}::{$stack['function']}" : $stack['function'];
                 unset($stack['class']);
                 unset($stack['function']);
                 $this->hub->addBreadcrumb(new Breadcrumb(
-                    $level,
+                    $severity,
                     Breadcrumb::TYPE_ERROR,
                     'method',
                     $method,
                     $stack
                 ));
-            }
-            if (method_exists(Severity::class, $level)) {
-                $severity = (Severity::class . '::' . $level)();
-            } else {
-                $severity = Severity::fromError($level);
             }
             $lastEventId = $this->hub->captureMessage($message, $severity);
         }

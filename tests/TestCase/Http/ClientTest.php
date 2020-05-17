@@ -11,6 +11,7 @@ use Closure;
 use Connehito\CakeSentry\Http\Client;
 use Exception;
 use Prophecy\Argument;
+use Prophecy\Prophecy\MethodProphecy;
 use ReflectionProperty;
 use RuntimeException;
 use Sentry\ClientInterface;
@@ -155,9 +156,9 @@ final class ClientTest extends TestCase
     /**
      * test capture error
      *
-     * @return void
+     * @return array // FIXME: In fact array<string,MethodProphecy[]>, but getMethodProphecies declare as MethodProphecy[]
      */
-    public function testCaptureError()
+    public function testCaptureError(): array
     {
         $subject = new Client([]);
         $sentryClientP = $this->prophesize(ClientInterface::class);
@@ -176,12 +177,33 @@ final class ClientTest extends TestCase
             'some error',
             []
         );
+
+        return $sentryClientP->getMethodProphecies();
+    }
+
+    /**
+     * test capture error compatible with  the error-level is specified by int or string
+     *
+     * @depends testCaptureError
+     *
+     * @param array<string,MethodProphecy[]> $mockMethodList
+     */
+    public function testCaptureErrorWithErrorLevelInteger(array $mockMethodList): void
+    {
+        // Rebuild ObjectProphecy in the same context with testCaptureError.
+        $sentryClientP = $this->prophesize(ClientInterface::class);
+        foreach ($mockMethodList as $mockMethod) {
+            $sentryClientP->addMethodProphecy($mockMethod[0]);
+        }
+
+        $subject = new Client([]);
+        $subject->getHub()->bindClient($sentryClientP->reveal());
+
+        $subject->capture(E_USER_WARNING, 'some error', []);
     }
 
     /**
      * test capture error fill breadcrumbs
-     *
-     * @return void
      */
     public function testCaptureErrorBuildBreadcrumbs()
     {
