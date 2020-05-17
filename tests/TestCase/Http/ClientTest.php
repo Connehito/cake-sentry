@@ -23,7 +23,7 @@ use Sentry\State\Scope;
 final class ClientTest extends TestCase
 {
     /**
-     * {@inheritdoc}
+     * @inheritDoc
      */
     public function setUp(): void
     {
@@ -34,25 +34,18 @@ final class ClientTest extends TestCase
 
     /**
      * Check constructor sets Hub instance
-     *
-     * @return void
      */
-    public function testSetupClient()
+    public function testSetupClient(): void
     {
         $subject = new Client([]);
 
-        $this->assertInstanceOf(
-            Hub::class,
-            $subject->getHub()
-        );
+        $this->assertInstanceOf(Hub::class, $subject->getHub());
     }
 
     /**
      * Check constructor throws exception unless dsn is given
-     *
-     * @return void
      */
-    public function testSetupClientNotHasDsn()
+    public function testSetupClientNotHasDsn(): void
     {
         Configure::delete('Sentry.dsn');
         $this->expectException(RuntimeException::class);
@@ -62,10 +55,8 @@ final class ClientTest extends TestCase
 
     /**
      * Check constructor passes options to sentry client
-     *
-     * @return void
      */
-    public function testSetupClientSetOptions()
+    public function testSetupClientSetOptions(): void
     {
         Configure::write('Sentry.excluded_exceptions', [NotFoundException::class]);
         $beforeSend = (new class
@@ -92,10 +83,8 @@ final class ClientTest extends TestCase
 
     /**
      * Check constructor fill before_send option
-     *
-     * @return void
      */
-    public function testSetupClientSetSendCallback()
+    public function testSetupClientSetSendCallback(): void
     {
         $subject = new Client([]);
         $actual = $subject
@@ -104,18 +93,13 @@ final class ClientTest extends TestCase
             ->getOptions()
             ->getBeforeSendCallback();
 
-        $this->assertInstanceOf(
-            Closure::class,
-            $actual
-        );
+        $this->assertInstanceOf(Closure::class, $actual);
     }
 
     /**
      * Check constructor dispatch event Client.afterSetup
-     *
-     * @return void
      */
-    public function testSetupClientDispatchAfterSetup()
+    public function testSetupClientDispatchAfterSetup(): void
     {
         $called = false;
         EventManager::instance()->on(
@@ -131,11 +115,9 @@ final class ClientTest extends TestCase
     }
 
     /**
-     * test capture exception
-     *
-     * @return void
+     * Test capture exception
      */
-    public function testCaptureException()
+    public function testCaptureException(): void
     {
         $subject = new Client([]);
         $sentryClientP = $this->prophesize(ClientInterface::class);
@@ -154,7 +136,7 @@ final class ClientTest extends TestCase
     }
 
     /**
-     * test capture error
+     * Test capture error
      *
      * @return array // FIXME: In fact array<string,MethodProphecy[]>, but getMethodProphecies declare as MethodProphecy[]
      */
@@ -182,11 +164,11 @@ final class ClientTest extends TestCase
     }
 
     /**
-     * test capture error compatible with  the error-level is specified by int or string
+     * Test capture error compatible with  the error-level is specified by int or string
      *
      * @depends testCaptureError
      *
-     * @param array<string,MethodProphecy[]> $mockMethodList
+     * @param array&array<string,MethodProphecy[]> $mockMethodList
      */
     public function testCaptureErrorWithErrorLevelInteger(array $mockMethodList): void
     {
@@ -203,9 +185,9 @@ final class ClientTest extends TestCase
     }
 
     /**
-     * test capture error fill breadcrumbs
+     * Test capture error fill breadcrumbs
      */
-    public function testCaptureErrorBuildBreadcrumbs()
+    public function testCaptureErrorBuildBreadcrumbs(): void
     {
         $stacks = debug_backtrace(DEBUG_BACKTRACE_PROVIDE_OBJECT);
         $expect = [
@@ -237,19 +219,13 @@ final class ClientTest extends TestCase
             ->shouldBeCalled();
         $subject->getHub()->bindClient($sentryClientP->reveal());
 
-        $subject->capture(
-            'warning',
-            'some error',
-            []
-        );
+        $subject->capture('warning', 'some error', []);
     }
 
     /**
      * Check capture dispatch beforeCapture
-     *
-     * @return void
      */
-    public function testCaptureDispatchBeforeCapture()
+    public function testCaptureDispatchBeforeCapture(): void
     {
         $subject = new Client([]);
         $sentryClientP = $this->prophesize(ClientInterface::class);
@@ -263,21 +239,15 @@ final class ClientTest extends TestCase
             }
         );
 
-        $subject->capture(
-            'info',
-            'some error',
-            ['exception' => new Exception()]
-        );
+        $subject->capture('info', 'some error', ['exception' => new Exception()]);
 
         $this->assertTrue($called);
     }
 
     /**
      * Check capture dispatch afterCapture and receives lastEventId
-     *
-     * @return void
      */
-    public function testCaptureDispatchAfterCapture()
+    public function testCaptureDispatchAfterCapture(): void
     {
         $lastEventId = 'aaa';
 
@@ -297,11 +267,7 @@ final class ClientTest extends TestCase
             }
         );
 
-        $subject->capture(
-            'info',
-            'some error',
-            ['exception' => new Exception()]
-        );
+        $subject->capture('info', 'some error', ['exception' => new Exception()]);
 
         $this->assertTrue($called);
         $this->assertSame($lastEventId, $actualLastEventId);

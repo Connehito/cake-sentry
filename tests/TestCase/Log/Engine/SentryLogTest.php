@@ -1,6 +1,6 @@
 <?php
 
-namespace Connehito\CakeSentry\Test\TestCase;
+namespace Connehito\CakeSentry\Test\TestCase\Log\Engine;
 
 use Cake\Core\Configure;
 use Connehito\CakeSentry\Http\Client;
