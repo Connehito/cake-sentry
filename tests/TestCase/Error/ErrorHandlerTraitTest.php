@@ -5,12 +5,12 @@ namespace Connehito\CakeSentry\Test\TestCase\Error;
 
 use Cake\Error\ErrorHandler;
 use Cake\TestSuite\TestCase;
-use Connehito\CakeSentry\Error\SentryErrorHandlerTrait;
+use Connehito\CakeSentry\Error\ErrorHandlerTrait;
 use ErrorException;
 use Psr\Http\Message\ServerRequestInterface;
 use Throwable;
 
-final class SentryErrorHandlerTraitTest extends TestCase
+final class ErrorHandlerTraitTest extends TestCase
 {
     /**
      * test for _logError()
@@ -39,13 +39,13 @@ final class SentryErrorHandlerTraitTest extends TestCase
     }
 
     /**
-     * Get instance of SentryErrorHandlerTrait implementation
+     * Get instance of ErrorHandlerTrait implementation
      */
     private function getSubject()
     {
         $subject = new class extends ErrorHandler
         {
-            use SentryErrorHandlerTrait {
+            use ErrorHandlerTrait {
                 _logError as originalLogError;
             }
 

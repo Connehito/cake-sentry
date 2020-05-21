@@ -6,7 +6,7 @@ use Cake\Core\InstanceConfigTrait;
 use Connehito\CakeSentry\Http\Client;
 use ErrorException;
 
-trait SentryErrorHandlerTrait
+trait ErrorHandlerTrait
 {
     /**
      * Change error messages into ErrorException and write exception log.
