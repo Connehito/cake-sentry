@@ -1,6 +1,7 @@
 <?php
+declare(strict_types=1);
 
-namespace App\Error\Event;
+namespace TestApp\Error\Event;
 
 use Cake\Event\Event;
 use Cake\Event\EventListenerInterface;
@@ -12,7 +13,7 @@ use function Sentry\configureScope as sentryConfigureScope;
 
 class SentryErrorContext implements EventListenerInterface
 {
-    public function implementedEvents()
+    public function implementedEvents(): array
     {
         return [
             'CakeSentry.Client.afterSetup' => 'setServerContext',
@@ -21,7 +22,7 @@ class SentryErrorContext implements EventListenerInterface
         ];
     }
 
-    public function setServerContext(Event $event)
+    public function setServerContext(Event $event): void
     {
         /** @var Client $subject */
         $subject = $event->getSubject();
@@ -31,7 +32,7 @@ class SentryErrorContext implements EventListenerInterface
         $options->setRelease('2.0.0@dev');
     }
 
-    public function setContext(Event $event)
+    public function setContext(Event $event): void
     {
         if (PHP_SAPI !== 'cli') {
             /** @var ServerRequest $request */
@@ -39,11 +40,11 @@ class SentryErrorContext implements EventListenerInterface
             $request->trustProxy = true;
 
             sentryConfigureScope(function (Scope $scope) use ($request, $event) {
-                $scope->setTag('app_version',  $request->getHeaderLine('App-Version') ?: 1.0);
+                $scope->setTag('app_version', $request->getHeaderLine('App-Version') ?: '1.0');
                 $exception = $event->getData('exception');
                 if ($exception) {
                     assert($exception instanceof \Throwable);
-                    $scope->setTag('status', $exception->getCode());
+                    $scope->setTag('status', (string)$exception->getCode());
                 }
                 $scope->setUser(['ip_address' => $request->clientIp()]);
                 $scope->setExtras([
@@ -54,7 +55,7 @@ class SentryErrorContext implements EventListenerInterface
         }
     }
 
-    public function callbackAfterCapture(Event $event)
+    public function callbackAfterCapture(Event $event): void
     {
         $lastEventId = $event->getData('lastEventId');
         // do nothing.

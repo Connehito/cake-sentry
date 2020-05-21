@@ -6,8 +6,6 @@ services:
       - ../../config:/dist/config
       - ../../composer.json:/dist/composer.json
       - ../..:/app
-    env_file:
-      - app.env
     ports:
       - "8080:80"
     container_name: cake-sentry-test-app

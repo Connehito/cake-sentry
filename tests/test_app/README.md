@@ -14,11 +14,11 @@ You can build stand alone CakePHP server with docker-compose for the following u
 ## Sandbox app
 Before do it, you must create Sentry PJ and get your DSN.  
 Please check Sentry's document about DSN  
-https://docs.sentry.io/clients/ruby/usage/
+https://docs.sentry.io/error-reporting/quickstart/?platform=php#configure-the-sdk
 
-1. `cp tests/test_app/app.env.default tests/test_app/app.env`.
-2. Set your DSN to `app.env`.
-3. `docker-compose run --rm  test-app bash` and go into container.
+1. `cp tests/test_app/app/config/.env.example tests/test_app/app/config/.env`.
+2. Set your DSN to `.env`.
+3. `docker-compose run --rm  test-app bash` to go into container.
 4. `cd /app/tests/test_app & composer install` if vendor dir is not created.
 5. exit container.
 6. `docker-compose up` to run CakePHP built-in server.
@@ -47,7 +47,5 @@ Like:
 * http://127.0.0.1:8080/exception/not_found/404 // throws NotFoundException(404)
 * http://127.0.0.1:8080/exception/not_implemented/503 // throws NotImplementedException(503)
 
-
 If you add `?message` query, then set error message.
 Like `http://127.0.0.1:8080/exception/method_not_allowed/400?message=you%20cant%20access%20here`
-

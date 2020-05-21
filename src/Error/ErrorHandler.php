@@ -5,5 +5,5 @@ use Cake\Error\ErrorHandler as CakeErrorHandler;
 
 class ErrorHandler extends CakeErrorHandler
 {
-    use SentryErrorHandlerTrait;
+    use ErrorHandlerTrait;
 }

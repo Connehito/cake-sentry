@@ -4,7 +4,6 @@ namespace Connehito\CakeSentry\Http;
 
 use Cake\Core\Configure;
 use Cake\Core\InstanceConfigTrait;
-use Cake\Error\PHP7ErrorException;
 use Cake\Event\Event;
 use Cake\Event\EventDispatcherTrait;
 use Cake\Utility\Hash;
@@ -43,6 +42,7 @@ class Client
 
     /**
      * Accessor for current hub
+     *
      * @return Hub
      */
     public function getHub(): Hub
@@ -66,28 +66,25 @@ class Client
 
         $exception = Hash::get($context, 'exception');
         if ($exception) {
-            if ($exception instanceof PHP7ErrorException) {
-                $exception = $exception->getError();
-            }
             $lastEventId = $this->hub->captureException($exception);
         } else {
             $stacks = array_slice(debug_backtrace(DEBUG_BACKTRACE_PROVIDE_OBJECT), 3);
+            if (method_exists(Severity::class, $level)) {
+                $severity = (Severity::class . '::' . $level)();
+            } else {
+                $severity = Severity::fromError($level);
+            }
             foreach ($stacks as $stack) {
                 $method = isset($stack['class']) ? "{$stack['class']}::{$stack['function']}" : $stack['function'];
                 unset($stack['class']);
                 unset($stack['function']);
                 $this->hub->addBreadcrumb(new Breadcrumb(
-                    $level,
+                    $severity,
                     Breadcrumb::TYPE_ERROR,
                     'method',
                     $method,
                     $stack
                 ));
-            }
-            if (method_exists(Severity::class, $level)) {
-                $severity = (Severity::class . '::' . $level)();
-            } else {
-                $severity = Severity::fromError($level);
             }
             $lastEventId = $this->hub->captureMessage($message, $severity);
         }
@@ -102,7 +99,7 @@ class Client
      *
      * @return void
      */
-    protected function setupClient()
+    protected function setupClient(): void
     {
         $config = (array)Configure::read('Sentry');
         if (!Hash::check($config, 'dsn')) {

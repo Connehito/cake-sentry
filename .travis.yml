@@ -1,6 +1,5 @@
 language: php
 php:
-  - 7.1
   - 7.2
   - 7.3
   - 7.4
@@ -23,10 +22,6 @@ matrix:
 
 before_script:
   - phpenv config-rm xdebug.ini
-  # @see https://github.com/cakephp/cakephp/commit/249cbc3d3a00e9eca931f44ee6990312f156e6cc#diff-4dafde5c48406484f186b8294c20e12c
-  - if [[ $TRAVIS_PHP_VERSION = 7.3 && $PREFER_LOWEST = '--prefer-lowest' ]]; then composer require cakephp/cakephp:3.6.13; fi
-  # @see https://github.com/cakephp/cakephp/commit/e78bd7f18f6e8fb237593477cd42b6de5f4fa7f5
-  - if [[ $TRAVIS_PHP_VERSION = 7.4 && $PREFER_LOWEST = '--prefer-lowest' ]]; then composer require cakephp/cakephp:3.8.3; fi
   - composer update --prefer-dist --no-interaction $PREFER_LOWEST
   - composer show -i
   # @see https://github.com/cakephp/cakephp/pull/13567#issuecomment-525844184
