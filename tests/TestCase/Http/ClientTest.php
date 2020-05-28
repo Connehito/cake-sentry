@@ -30,7 +30,7 @@ final class ClientTest extends TestCase
     {
         parent::setUp();
 
-        Configure::write('Sentry.dsn', 'https://user:pass@example.com/yourproject');
+        Configure::write('Sentry.dsn', 'https://yourtoken@example.com/yourproject/1');
     }
 
     /**
