@@ -20,7 +20,7 @@ final class SentryLogTest extends TestCase
     {
         parent::setUp();
 
-        Configure::write('Sentry.dsn', 'https://user:pass@example.com/yourproject');
+        Configure::write('Sentry.dsn', 'https://yourtoken@example.com/yourproject/1');
         $subject = new SentryLog([]);
 
         $clientMock = $this->getMockBuilder(Client::class)
