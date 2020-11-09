@@ -86,7 +86,11 @@ class Client
                     $stack
                 ));
             }
-            $lastEventId = $this->hub->captureMessage($message, $severity);
+            try {
+                $lastEventId = $this->hub->captureMessage($message, $severity);
+            } catch (\Sentry\Exception\JsonException $e) {
+                // Do nothing
+            }
         }
 
         $context['lastEventId'] = $lastEventId;
