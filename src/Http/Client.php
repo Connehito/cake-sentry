@@ -64,6 +64,8 @@ class Client
         $event = new Event('CakeSentry.Client.beforeCapture', $this, $context);
         $this->getEventManager()->dispatch($event);
 
+        $lastEventId = '';
+
         $exception = Hash::get($context, 'exception');
         if ($exception) {
             $lastEventId = $this->hub->captureException($exception);
