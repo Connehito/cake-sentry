@@ -1,5 +1,5 @@
 {
-    "name": "androideo/cake-sentry",
+    "name": "connehito/cake-sentry",
     "description": "Sentry plugin for CakePHP3",
     "type": "cakephp-plugin",
     "require": {
