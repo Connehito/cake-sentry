@@ -15,7 +15,9 @@ use RuntimeException;
 
 final class ErrorLoggerTest extends TestCase
 {
-    /** @var MockObject LoggerInterface */
+    /**
+     * @var MockObject|LoggerInterface LoggerInterface
+     */
     private $subject;
 
     /**

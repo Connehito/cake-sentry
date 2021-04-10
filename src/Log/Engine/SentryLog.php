@@ -1,4 +1,5 @@
 <?php
+declare(strict_types=1);
 
 namespace Connehito\CakeSentry\Log\Engine;
 
@@ -11,7 +12,7 @@ class SentryLog extends BaseLog
     protected $client;
 
     /**
-     * {@inheritdoc}
+     * @inheritDoc
      */
     public function __construct(array $config = [])
     {
@@ -23,7 +24,7 @@ class SentryLog extends BaseLog
     }
 
     /**
-     * {@inheritdoc}
+     * @inheritDoc
      */
     public function log($level, $message, array $context = [])
     {

@@ -1,4 +1,5 @@
 <?php
+declare(strict_types=1);
 
 namespace Connehito\CakeSentry\Http;
 
@@ -10,7 +11,6 @@ use Cake\Utility\Hash;
 use Psr\Http\Message\ServerRequestInterface;
 use RuntimeException;
 use Sentry\Breadcrumb;
-use Sentry\Integration\IntegrationInterface;
 use Sentry\SentrySdk;
 use Sentry\Severity;
 use Sentry\State\Hub;
@@ -44,7 +44,7 @@ class Client
     /**
      * Accessor for current hub
      *
-     * @return Hub
+     * @return \Sentry\State\Hub
      */
     public function getHub(): Hub
     {
@@ -57,7 +57,6 @@ class Client
      * @param mixed $level error level
      * @param string $message error message
      * @param array $context subject
-     *
      * @return void
      */
     public function capture($level, string $message, array $context): void
@@ -70,7 +69,7 @@ class Client
             $lastEventId = $this->hub->captureException($exception);
         } else {
             $stacks = array_slice(debug_backtrace(DEBUG_BACKTRACE_PROVIDE_OBJECT), 3);
-            if (method_exists(Severity::class, $level)) {
+            if (is_string($level) && method_exists(Severity::class, $level)) {
                 $severity = (Severity::class . '::' . $level)();
             } else {
                 $severity = Severity::fromError($level);
@@ -80,7 +79,7 @@ class Client
                 unset($stack['class']);
                 unset($stack['function']);
                 $this->hub->addBreadcrumb(new Breadcrumb(
-                    $severity,
+                    (string)$severity,
                     Breadcrumb::TYPE_ERROR,
                     'method',
                     $method,
@@ -126,7 +125,7 @@ class Client
      *
      * @example $integrationConfig = [IgnoreErrorsIntegration => ['ignore_exceptions' => \RuntimeException::class]]
      * @param array<string, array> $integrationConfig Integration with options map
-     * @return array<IntegrationInterface>
+     * @return array<\Sentry\Integration\IntegrationInterface>
      */
     protected function buildIntegrations(array $integrationConfig): array
     {
