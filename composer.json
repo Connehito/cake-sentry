@@ -3,15 +3,15 @@
     "description": "Sentry plugin for CakePHP",
     "type": "cakephp-plugin",
     "require": {
-        "php": "^7.2",
+        "php": "^7.2 || ^8.0",
         "cakephp/cakephp": "^4.0",
         "sentry/sentry": "^3.0"
     },
     "require-dev": {
         "cakephp/cakephp-codesniffer": "@stable",
-        "jangregor/phpstan-prophecy": "^0.4.2",
+        "jangregor/phpstan-prophecy": "^0.8",
         "phpstan/phpstan": "@stable",
-        "phpunit/phpunit": "^8.5.0",
+        "phpunit/phpunit": "^8.5 || ^9.3",
         "symfony/http-client": "^5.2"
     },
     "license": "MIT",
