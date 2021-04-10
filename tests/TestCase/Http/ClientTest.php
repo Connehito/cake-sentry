@@ -143,7 +143,7 @@ final class ClientTest extends TestCase
 
         $sentryClientP
             ->captureException($exception, Argument::type(Scope::class), null)
-            ->shouldHaveBeenCalled();
+            ->shouldHaveBeenCalledOnce();
     }
 
     /**
@@ -155,7 +155,7 @@ final class ClientTest extends TestCase
     {
         $subject = new Client([]);
         $sentryClientP = $this->prophesize(ClientInterface::class);
-        $sentryClientP->getOptions()->shouldBeCalled()->willReturn(new Options());
+        $sentryClientP->getOptions()->willReturn(new Options());
         $sentryClientP
             ->captureMessage(
                 'some error',
@@ -163,7 +163,7 @@ final class ClientTest extends TestCase
                 Argument::type(Scope::class),
                 null
             )
-            ->shouldBeCalled()
+            ->shouldBeCalledOnce()
             ->willReturn(EventId::generate());
             // NOTE:
             // This itself is not of interest for the test case,
@@ -214,7 +214,7 @@ final class ClientTest extends TestCase
 
         $subject = new Client([]);
         $sentryClientP = $this->prophesize(ClientInterface::class);
-        $sentryClientP->getOptions()->shouldBeCalled()->willReturn(new Options());
+        $sentryClientP->getOptions()->willReturn(new Options());
         $sentryClientP
             ->captureMessage(
                 Argument::any(),
@@ -234,7 +234,7 @@ final class ClientTest extends TestCase
                 }),
                 null
             )
-            ->shouldBeCalled()
+            ->shouldBeCalledOnce()
             ->willReturn(EventId::generate());
             // NOTE:
             // This itself is not of interest for the test case,
@@ -277,7 +277,7 @@ final class ClientTest extends TestCase
         $subject = new Client([]);
         $sentryClientP = $this->prophesize(ClientInterface::class);
         $sentryClientP->captureException(Argument::cetera())
-            ->shouldBeCalled()
+            ->shouldBeCalledOnce()
             ->willReturn($lastEventId);
         $subject->getHub()->bindClient($sentryClientP->reveal());
 
