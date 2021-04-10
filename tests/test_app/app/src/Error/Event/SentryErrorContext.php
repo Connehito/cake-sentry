@@ -30,7 +30,7 @@ class SentryErrorContext implements EventListenerInterface
         $options = $subject->getHub()->getClient()->getOptions();
 
         $options->setEnvironment('test_app');
-        $options->setRelease('2.0.0@dev');
+        $options->setRelease('4.0.0@dev');
     }
 
     public function setContext(Event $event): void
@@ -42,7 +42,6 @@ class SentryErrorContext implements EventListenerInterface
 
             sentryConfigureScope(function (Scope $scope) use ($request, $event) {
                 $scope->setTag('app_version', $request->getHeaderLine('App-Version') ?: '1.0');
-                $scope->setTag('cakephp_version', Configure::version());
                 $exception = $event->getData('exception');
                 if ($exception) {
                     assert($exception instanceof \Throwable);
@@ -53,6 +52,14 @@ class SentryErrorContext implements EventListenerInterface
                     'foo' => 'bar',
                     'request attributes' => $request->getAttributes(),
                 ]);
+            });
+        } else {
+            sentryConfigureScope(function (Scope $scope) use ($event) {
+                $argv = env('argv');
+                array_shift($argv);
+                array_unshift($argv, env('_'));
+                $scope->setExtra('command', implode(' ', $argv));
+                $scope->setTag('cakephp_version', Configure::version());
             });
         }
     }
