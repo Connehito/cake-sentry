@@ -16,6 +16,8 @@ use Prophecy\Prophecy\MethodProphecy;
 use ReflectionProperty;
 use RuntimeException;
 use Sentry\ClientInterface;
+use Sentry\EventId;
+use Sentry\Integration\IgnoreErrorsIntegration;
 use Sentry\Options;
 use Sentry\Severity;
 use Sentry\State\Hub;
@@ -59,27 +61,34 @@ final class ClientTest extends TestCase
      */
     public function testSetupClientSetOptions(): void
     {
-        Configure::write('Sentry.excluded_exceptions', [NotFoundException::class]);
-        $beforeSend = (new class
-        {
-            public function __invoke()
-            {
-                return true;
-            }
-        });
-        Configure::write('Sentry.before_send', $beforeSend);
+        Configure::write('Sentry.server_name', 'test-server');
 
         $subject = new Client([]);
         $options = $subject->getHub()->getClient()->getOptions();
 
-        $this->assertSame(
-            [NotFoundException::class],
-            $options->getExcludedExceptions()
-        );
-        $this->assertSame(
-            get_class($beforeSend),
-            get_class($options->getBeforeSendCallback())
-        );
+        $this->assertSame('test-server', $options->getServerName());
+    }
+
+    /**
+     * Check constructor set up integrations
+     */
+    public function testSetupClientSetIntegrations(): void
+    {
+        $ignoreErrors = [NotFoundException::class];
+        Configure::write('Sentry.integrations', [
+            IgnoreErrorsIntegration::class => [
+                'ignore_exceptions' => $ignoreErrors,
+            ],
+        ]);
+
+        $subject = new Client([]);
+
+        $actualIntegration = $subject->getHub()->getIntegration(IgnoreErrorsIntegration::class);
+        $actualIntegrationProperty = new ReflectionProperty($actualIntegration, 'options');
+        $actualIntegrationProperty->setAccessible(true);
+        $actualIntegrationOption = $actualIntegrationProperty->getValue($actualIntegration);
+
+        $this->assertSame($ignoreErrors, $actualIntegrationOption['ignore_exceptions']);
     }
 
     /**
@@ -132,8 +141,8 @@ final class ClientTest extends TestCase
         );
 
         $sentryClientP
-            ->captureException($exception, Argument::type(Scope::class))
-            ->shouldHaveBeenCalled();
+            ->captureException($exception, Argument::type(Scope::class), null)
+            ->shouldHaveBeenCalledOnce();
     }
 
     /**
@@ -145,14 +154,20 @@ final class ClientTest extends TestCase
     {
         $subject = new Client([]);
         $sentryClientP = $this->prophesize(ClientInterface::class);
-        $sentryClientP->getOptions()->shouldBeCalled()->willReturn(new Options());
+        $sentryClientP->getOptions()->willReturn(new Options());
         $sentryClientP
             ->captureMessage(
                 'some error',
                 Severity::fromError(E_WARNING),
-                Argument::type(Scope::class)
+                Argument::type(Scope::class),
+                null
             )
-            ->shouldBeCalled();
+            ->shouldBeCalledOnce()
+            ->willReturn(EventId::generate());
+            // NOTE:
+            // This itself is not of interest for the test case,
+            // but for ProphecyMock's technical reasons, the return-value needs to be a real `EvnetId`
+
         $subject->getHub()->bindClient($sentryClientP->reveal());
 
         $subject->capture(
@@ -168,7 +183,6 @@ final class ClientTest extends TestCase
      * Test capture error compatible with  the error-level is specified by int or string
      *
      * @depends testCaptureError
-     *
      * @param array&array<string,MethodProphecy[]> $mockMethodList
      */
     public function testCaptureErrorWithErrorLevelInteger(array $mockMethodList): void
@@ -198,7 +212,7 @@ final class ClientTest extends TestCase
 
         $subject = new Client([]);
         $sentryClientP = $this->prophesize(ClientInterface::class);
-        $sentryClientP->getOptions()->shouldBeCalled()->willReturn(new Options());
+        $sentryClientP->getOptions()->willReturn(new Options());
         $sentryClientP
             ->captureMessage(
                 Argument::any(),
@@ -215,9 +229,15 @@ final class ClientTest extends TestCase
                     }
 
                     return true;
-                })
+                }),
+                null
             )
-            ->shouldBeCalled();
+            ->shouldBeCalledOnce()
+            ->willReturn(EventId::generate());
+            // NOTE:
+            // This itself is not of interest for the test case,
+            // but for ProphecyMock's technical reasons, the return-value needs to be a real `EvnetId`
+
         $subject->getHub()->bindClient($sentryClientP->reveal());
 
         $subject->capture('warning', 'some error', []);
@@ -250,12 +270,12 @@ final class ClientTest extends TestCase
      */
     public function testCaptureDispatchAfterCapture(): void
     {
-        $lastEventId = 'aaa';
+        $lastEventId = EventId::generate();
 
         $subject = new Client([]);
         $sentryClientP = $this->prophesize(ClientInterface::class);
         $sentryClientP->captureException(Argument::cetera())
-            ->shouldBeCalled()
+            ->shouldBeCalledOnce()
             ->willReturn($lastEventId);
         $subject->getHub()->bindClient($sentryClientP->reveal());
 
