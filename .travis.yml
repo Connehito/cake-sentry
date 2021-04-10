@@ -23,6 +23,7 @@ matrix:
 
 before_script:
   - phpenv config-rm xdebug.ini
+  - echo "assert.exception = 1" >> ~/.phpenv/versions/$(phpenv version-name)/etc/php.ini
   - if [[ $TRAVIS_PHP_VERSION = 7.2 ]]; then composer remove --dev phpspec/prophecy-phpunit; fi
   - composer update --prefer-dist --no-interaction $PREFER_LOWEST
   - composer show -i
