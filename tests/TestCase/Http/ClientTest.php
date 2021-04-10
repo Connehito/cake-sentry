@@ -16,6 +16,7 @@ use Prophecy\Prophecy\MethodProphecy;
 use ReflectionProperty;
 use RuntimeException;
 use Sentry\ClientInterface;
+use Sentry\EventId;
 use Sentry\Integration\IgnoreErrorsIntegration;
 use Sentry\Options;
 use Sentry\Severity;
@@ -141,7 +142,7 @@ final class ClientTest extends TestCase
         );
 
         $sentryClientP
-            ->captureException($exception, Argument::type(Scope::class))
+            ->captureException($exception, Argument::type(Scope::class), null)
             ->shouldHaveBeenCalled();
     }
 
@@ -159,9 +160,15 @@ final class ClientTest extends TestCase
             ->captureMessage(
                 'some error',
                 Severity::fromError(E_WARNING),
-                Argument::type(Scope::class)
+                Argument::type(Scope::class),
+                null
             )
-            ->shouldBeCalled();
+            ->shouldBeCalled()
+            ->willReturn(EventId::generate());
+            // NOTE:
+            // This itself is not of interest for the test case,
+            // but for ProphecyMock's technical reasons, the return-value needs to be a real `EvnetId`
+
         $subject->getHub()->bindClient($sentryClientP->reveal());
 
         $subject->capture(
@@ -224,9 +231,15 @@ final class ClientTest extends TestCase
                     }
 
                     return true;
-                })
+                }),
+                null
             )
-            ->shouldBeCalled();
+            ->shouldBeCalled()
+            ->willReturn(EventId::generate());
+            // NOTE:
+            // This itself is not of interest for the test case,
+            // but for ProphecyMock's technical reasons, the return-value needs to be a real `EvnetId`
+
         $subject->getHub()->bindClient($sentryClientP->reveal());
 
         $subject->capture('warning', 'some error', []);
@@ -259,7 +272,7 @@ final class ClientTest extends TestCase
      */
     public function testCaptureDispatchAfterCapture(): void
     {
-        $lastEventId = 'aaa';
+        $lastEventId = EventId::generate();
 
         $subject = new Client([]);
         $sentryClientP = $this->prophesize(ClientInterface::class);
