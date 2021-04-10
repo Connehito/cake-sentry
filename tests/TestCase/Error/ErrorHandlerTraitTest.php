@@ -52,8 +52,8 @@ final class ErrorHandlerTraitTest extends TestCase
             public $wrappedException;
 
             /**
-             * Implement a non-functional method to avoid echoing in running test.
              * {@inheritDoc}
+             * Implement a non-functional method to avoid echoing in running test.
              */
             protected function _displayError(array $error, bool $debug): void
             {

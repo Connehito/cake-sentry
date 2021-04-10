@@ -11,11 +11,13 @@ use ReflectionProperty;
 
 final class SentryLogTest extends TestCase
 {
-    /** @var SentryLog */
+    /**
+     * @var SentryLog
+     */
     private $subject;
 
     /**
-     * {@inheritdoc}
+     * @inheritDoc
      */
     public function setUp(): void
     {

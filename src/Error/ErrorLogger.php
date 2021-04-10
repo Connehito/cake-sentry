@@ -10,7 +10,6 @@ use Throwable;
 
 class ErrorLogger extends CakeErrorLogger
 {
-
     /**
      * {@inheritDoc}
      *

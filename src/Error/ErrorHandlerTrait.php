@@ -1,9 +1,8 @@
 <?php
+declare(strict_types=1);
 
 namespace Connehito\CakeSentry\Error;
 
-use Cake\Core\InstanceConfigTrait;
-use Connehito\CakeSentry\Http\Client;
 use ErrorException;
 
 trait ErrorHandlerTrait
