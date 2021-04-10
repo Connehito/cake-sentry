@@ -69,7 +69,7 @@ class Client
             $lastEventId = $this->hub->captureException($exception);
         } else {
             $stacks = array_slice(debug_backtrace(DEBUG_BACKTRACE_PROVIDE_OBJECT), 3);
-            if (method_exists(Severity::class, $level)) {
+            if (is_string($level) && method_exists(Severity::class, $level)) {
                 $severity = (Severity::class . '::' . $level)();
             } else {
                 $severity = Severity::fromError($level);
