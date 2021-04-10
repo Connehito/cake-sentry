@@ -125,7 +125,7 @@ class Client
      * key: IntegrationClassName, value: Options
      *
      * @example $integrationConfig = [IgnoreErrorsIntegration => ['ignore_exceptions' => \RuntimeException::class]]
-     * @param array<string, array> $integrationConfig
+     * @param array<string, array> $integrationConfig Integration with options map
      * @return array<IntegrationInterface>
      */
     protected function buildIntegrations(array $integrationConfig): array

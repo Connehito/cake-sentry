@@ -78,7 +78,7 @@ final class ClientTest extends TestCase
         Configure::write('Sentry.integrations', [
             IgnoreErrorsIntegration::class => [
                 'ignore_exceptions' => $ignoreErrors,
-            ]
+            ],
         ]);
 
         $subject = new Client([]);
@@ -89,7 +89,6 @@ final class ClientTest extends TestCase
         $actualIntegrationOption = $actualIntegrationProperty->getValue($actualIntegration);
 
         $this->assertSame($ignoreErrors, $actualIntegrationOption['ignore_exceptions']);
-
     }
 
     /**
@@ -184,7 +183,6 @@ final class ClientTest extends TestCase
      * Test capture error compatible with  the error-level is specified by int or string
      *
      * @depends testCaptureError
-     *
      * @param array&array<string,MethodProphecy[]> $mockMethodList
      */
     public function testCaptureErrorWithErrorLevelInteger(array $mockMethodList): void
