@@ -19,11 +19,11 @@
         "mobiledetect/mobiledetectlib": "^2.8"
     },
     "require-dev": {
-        "cakephp/bake": "^2.0.3",
-        "cakephp/cakephp-codesniffer": "~4.0.0",
-        "cakephp/debug_kit": "^4.0",
-        "josegonzalez/dotenv": "^3.2",
-        "phpunit/phpunit": "^8.5",
+        "cakephp/bake": "@stable",
+        "cakephp/cakephp-codesniffer": "@stable",
+        "cakephp/debug_kit": "@stable",
+        "josegonzalez/dotenv": "@stable",
+        "phpunit/phpunit": "^8.5 || ^9.3",
         "psy/psysh": "@stable",
         "symfony/http-client": "^5.2"
     },
