@@ -15,3 +15,4 @@ services:
       context: ../..
       dockerfile: ./tests/test_app/Dockerfile
     command: bash -c "/app/tests/test_app/app/bin/cake server -H 0.0.0.0 -p 80"
+    working_dir: /app/tests/test_app/app
