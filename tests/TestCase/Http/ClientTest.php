@@ -12,6 +12,7 @@ use Closure;
 use Connehito\CakeSentry\Http\Client;
 use Exception;
 use Prophecy\Argument;
+use Prophecy\PhpUnit\ProphecyTrait;
 use Prophecy\Prophecy\MethodProphecy;
 use ReflectionProperty;
 use RuntimeException;
@@ -25,6 +26,8 @@ use Sentry\State\Scope;
 
 final class ClientTest extends TestCase
 {
+    use ProphecyTrait;
+
     /**
      * @inheritDoc
      */

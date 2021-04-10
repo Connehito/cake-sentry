@@ -10,6 +10,7 @@
     "require-dev": {
         "cakephp/cakephp-codesniffer": "@stable",
         "jangregor/phpstan-prophecy": "^0.8",
+        "phpspec/prophecy-phpunit": "@stable",
         "phpstan/phpstan": "@stable",
         "phpunit/phpunit": "^8.5 || ^9.3",
         "symfony/http-client": "^5.2"
