@@ -16,6 +16,7 @@ use Prophecy\Prophecy\MethodProphecy;
 use ReflectionProperty;
 use RuntimeException;
 use Sentry\ClientInterface;
+use Sentry\Integration\IgnoreErrorsIntegration;
 use Sentry\Options;
 use Sentry\Severity;
 use Sentry\State\Hub;
@@ -59,27 +60,35 @@ final class ClientTest extends TestCase
      */
     public function testSetupClientSetOptions(): void
     {
-        Configure::write('Sentry.excluded_exceptions', [NotFoundException::class]);
-        $beforeSend = (new class
-        {
-            public function __invoke()
-            {
-                return true;
-            }
-        });
-        Configure::write('Sentry.before_send', $beforeSend);
+        Configure::write('Sentry.server_name', 'test-server');
 
         $subject = new Client([]);
         $options = $subject->getHub()->getClient()->getOptions();
 
-        $this->assertSame(
-            [NotFoundException::class],
-            $options->getExcludedExceptions()
-        );
-        $this->assertSame(
-            get_class($beforeSend),
-            get_class($options->getBeforeSendCallback())
-        );
+        $this->assertSame('test-server', $options->getServerName());
+    }
+
+    /**
+     * Check constructor set up integrations
+     */
+    public function testSetupClientSetIntegrations(): void
+    {
+        $ignoreErrors = [NotFoundException::class];
+        Configure::write('Sentry.integrations', [
+            IgnoreErrorsIntegration::class => [
+                'ignore_exceptions' => $ignoreErrors,
+            ]
+        ]);
+
+        $subject = new Client([]);
+
+        $actualIntegration = $subject->getHub()->getIntegration(IgnoreErrorsIntegration::class);
+        $actualIntegrationProperty = new ReflectionProperty($actualIntegration, 'options');
+        $actualIntegrationProperty->setAccessible(true);
+        $actualIntegrationOption = $actualIntegrationProperty->getValue($actualIntegration);
+
+        $this->assertSame($ignoreErrors, $actualIntegrationOption['ignore_exceptions']);
+
     }
 
     /**
