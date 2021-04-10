@@ -12,8 +12,7 @@ RUN echo -e "zend_extension = xdebug.so\n" \
         "xdebug.idekey = CAKE_SENTRY_TEST_APP\n" \
     > /usr/local/etc/php/conf.d/docker-php-ext-xdebug.ini
 
-RUN php -r "copy('https://getcomposer.org/installer', 'composer-setup.php');" \
-  && php -r "if (hash_file('sha384', 'composer-setup.php') === 'e0012edf3e80b6978849f5eff0d4b4e4c79ff1609dd1e613307e16318854d24ae64f26d17af3ef0bf7cfb710ca74755a') { echo 'Installer verified'; } else { echo 'Installer corrupt'; unlink('composer-setup.php'); } echo PHP_EOL;" \
-  && php composer-setup.php \
+COPY tests/test_app/composer-install.sh /usr/bin/composer-install
+RUN composer-install \
   && mv composer.phar /usr/bin/composer
 WORKDIR /app
