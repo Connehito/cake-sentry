@@ -47,6 +47,25 @@ final class ClientTest extends TestCase
     }
 
     /**
+     * Check the configuration values are merged into the default-config.
+     */
+    public function testSetUpClientMergeConfig(): void
+    {
+        $userConfig = [
+            'dsn' => false,
+            'in_app_exclude' => ['/app/vendor', '/app/tmp',],
+            'server_name' => 'test-server',
+        ];
+
+        Configure::write('Sentry', $userConfig);
+        $subject = new Client([]);
+
+        $this->assertSame([APP], $subject->getConfig('sentry.prefixes'), 'Default value not applied');
+        $this->assertSame($userConfig['in_app_exclude'], $subject->getConfig('sentry.in_app_exclude'), 'Default value is not overwritten');
+        $this->assertSame(false, $subject->getConfig('sentry.dsn'), 'Set value is not addes');
+    }
+
+    /**
      * Check constructor throws exception unless dsn is given
      */
     public function testSetupClientNotHasDsn(): void

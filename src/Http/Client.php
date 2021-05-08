@@ -21,7 +21,16 @@ class Client
     use InstanceConfigTrait;
 
     /* @var array default instance config */
-    protected $_defaultConfig = [];
+    protected $_defaultConfig = [
+        'sentry' => [
+            'prefixes' => [
+                APP,
+            ],
+            'in_app_exclude' => [
+                ROOT . DS . 'vendor' . DS,
+            ],
+        ],
+    ];
 
     /* @var Hub */
     protected $hub;
@@ -33,6 +42,10 @@ class Client
      */
     public function __construct(array $config)
     {
+        $userConfig = Configure::read('Sentry');
+        if ($userConfig) {
+            $this->_defaultConfig['sentry'] = array_merge($this->_defaultConfig['sentry'], $userConfig);
+        }
         $this->setConfig($config);
         $this->setupClient();
     }
@@ -97,7 +110,7 @@ class Client
      */
     protected function setupClient(): void
     {
-        $config = (array)Configure::read('Sentry');
+        $config = $this->getConfig('sentry');
         if (!Hash::check($config, 'dsn')) {
             throw new RuntimeException('Sentry DSN not provided.');
         }
