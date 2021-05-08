@@ -1,4 +1,4 @@
-FROM php:7.4-alpine
+FROM php:8-alpine
 RUN apk add bash icu-dev git
 
 WORKDIR /usr/src/php/ext
