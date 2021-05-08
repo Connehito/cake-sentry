@@ -7,7 +7,6 @@ RUN NPROC=$(grep -c ^processor /proc/cpuinfo 2>/dev/null || 1) && \
     docker-php-ext-install -j${NPROC} intl xdebug pdo_mysql
 RUN echo -e "zend_extension=xdebug.so\n" \
         "xdebug.client_host=host.docker.internal\n" \
-        "xdebug.start_with_request=yes\n" \
         "xdebug.mode=debug" \
     > /usr/local/etc/php/conf.d/docker-php-ext-xdebug.ini
 
