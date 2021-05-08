@@ -6,7 +6,6 @@ namespace Connehito\CakeSentry\Test\TestCase\Http;
 use Cake\Core\Configure;
 use Cake\Event\Event;
 use Cake\Event\EventManager;
-use Cake\Http\Exception\NotFoundException;
 use Cake\TestSuite\TestCase;
 use Closure;
 use Connehito\CakeSentry\Http\Client;
@@ -18,7 +17,6 @@ use ReflectionProperty;
 use RuntimeException;
 use Sentry\ClientInterface;
 use Sentry\EventId;
-use Sentry\Integration\IgnoreErrorsIntegration;
 use Sentry\Options;
 use Sentry\Severity;
 use Sentry\State\Hub;
@@ -70,28 +68,6 @@ final class ClientTest extends TestCase
         $options = $subject->getHub()->getClient()->getOptions();
 
         $this->assertSame('test-server', $options->getServerName());
-    }
-
-    /**
-     * Check constructor set up integrations
-     */
-    public function testSetupClientSetIntegrations(): void
-    {
-        $ignoreErrors = [NotFoundException::class];
-        Configure::write('Sentry.integrations', [
-            IgnoreErrorsIntegration::class => [
-                'ignore_exceptions' => $ignoreErrors,
-            ],
-        ]);
-
-        $subject = new Client([]);
-
-        $actualIntegration = $subject->getHub()->getIntegration(IgnoreErrorsIntegration::class);
-        $actualIntegrationProperty = new ReflectionProperty($actualIntegration, 'options');
-        $actualIntegrationProperty->setAccessible(true);
-        $actualIntegrationOption = $actualIntegrationProperty->getValue($actualIntegration);
-
-        $this->assertSame($ignoreErrors, $actualIntegrationOption['ignore_exceptions']);
     }
 
     /**

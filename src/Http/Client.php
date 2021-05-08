@@ -97,39 +97,15 @@ class Client
      */
     protected function setupClient(): void
     {
-        $integrationConfig = (array)Configure::consume('Sentry.integrations');
         $config = (array)Configure::read('Sentry');
         if (!Hash::check($config, 'dsn')) {
             throw new RuntimeException('Sentry DSN not provided.');
         }
-
-        $config += ['integrations' => $this->buildIntegrations($integrationConfig)];
 
         init($config);
         $this->hub = SentrySdk::getCurrentHub();
 
         $event = new Event('CakeSentry.Client.afterSetup', $this);
         $this->getEventManager()->dispatch($event);
-    }
-
-    /**
-     * Build configured integrations
-     *
-     * Config should be written as `Sentry.integrations`.
-     * The content is in the following form
-     * key: IntegrationClassName, value: Options
-     *
-     * @example $integrationConfig = [IgnoreErrorsIntegration => ['ignore_exceptions' => \RuntimeException::class]]
-     * @param array<string, array> $integrationConfig Integration with options map
-     * @return array<\Sentry\Integration\IntegrationInterface>
-     */
-    protected function buildIntegrations(array $integrationConfig): array
-    {
-        $integrations = [];
-        foreach ($integrationConfig as $integration => $options) {
-            $integrations[] = new $integration($options);
-        }
-
-        return $integrations;
     }
 }
