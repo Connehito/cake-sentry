@@ -13,9 +13,9 @@ use Exception;
 use Prophecy\Argument;
 use Prophecy\PhpUnit\ProphecyTrait;
 use Prophecy\Prophecy\MethodProphecy; // phpcs:ignore SlevomatCodingStandard.Namespaces.UnusedUses.UnusedUse
-use ReflectionProperty;
 use RuntimeException;
 use Sentry\ClientInterface;
+use Sentry\EventHint;
 use Sentry\EventId;
 use Sentry\Options;
 use Sentry\Severity;
@@ -158,7 +158,7 @@ final class ClientTest extends TestCase
                 'some error',
                 Severity::fromError(E_WARNING),
                 Argument::type(Scope::class),
-                null
+                Argument::type(EventHint::class)
             )
             ->shouldBeCalledOnce()
             ->willReturn(EventId::generate());
@@ -215,20 +215,19 @@ final class ClientTest extends TestCase
             ->captureMessage(
                 Argument::any(),
                 Argument::any(),
-                Argument::that(function ($a) use (&$expect) {
-                    $breadcrumbsProp = new ReflectionProperty($a, 'breadcrumbs');
-                    $breadcrumbsProp->setAccessible(true);
-                    $breadcrumbs = $breadcrumbsProp->getValue($a);
-                    $metadata = $breadcrumbs[0]->getMetaData();
-                    foreach ($expect as $field => $val) {
-                        if ($metadata[$field] !== $val) {
-                            return false;
-                        }
+                Argument::any(),
+                Argument::that(function (EventHint $a) use (&$expect) {
+                    $frames = $a->stacktrace->getFrames();
+                    $actual = array_slice($frames, -2, 1)[0];
+                    if ($actual->getFile() !== $expect['file']) {
+                        $this->fail('stacktrace "file" does not t match');
+                    }
+                    if ($actual->getLine() !== $expect['line']) {
+                        $this->fail('stacktrace "line" does not t match');
                     }
 
                     return true;
-                }),
-                null
+                })
             )
             ->shouldBeCalledOnce()
             ->willReturn(EventId::generate());

@@ -9,9 +9,11 @@ use Cake\Event\Event;
 use Cake\Event\EventDispatcherTrait;
 use Cake\Utility\Hash;
 use RuntimeException;
-use Sentry\Breadcrumb;
+use Sentry\EventHint;
 use Sentry\SentrySdk;
+use Sentry\Serializer\RepresentationSerializer;
 use Sentry\Severity;
+use Sentry\StacktraceBuilder;
 use Sentry\State\Hub;
 use function Sentry\init;
 
@@ -35,6 +37,9 @@ class Client
     /* @var Hub */
     protected $hub;
 
+    /* @var StacktraceBuilder */
+    protected $stackTraceBuilder;
+
     /**
      * Client constructor.
      *
@@ -48,6 +53,10 @@ class Client
         }
         $this->setConfig($config);
         $this->setupClient();
+        $this->stackTraceBuilder = new StacktraceBuilder(
+            $this->getHub()->getClient()->getOptions(),
+            new RepresentationSerializer($this->getHub()->getClient()->getOptions())
+        );
     }
 
     /**
@@ -83,19 +92,13 @@ class Client
             } else {
                 $severity = Severity::fromError($level);
             }
-            foreach ($stacks as $stack) {
-                $method = isset($stack['class']) ? "{$stack['class']}::{$stack['function']}" : $stack['function'];
-                unset($stack['class']);
-                unset($stack['function']);
-                $this->hub->addBreadcrumb(new Breadcrumb(
-                    (string)$severity,
-                    Breadcrumb::TYPE_ERROR,
-                    'method',
-                    $method,
-                    $stack
-                ));
-            }
-            $lastEventId = $this->hub->captureMessage($message, $severity);
+            $stackTrace = $this->stackTraceBuilder->buildFromBacktrace($stacks, $stacks[0]['file'], $stacks[0]['line']);
+
+            $hint = new EventHint();
+            $hint->extra = $context;
+            $hint->stacktrace = $stackTrace;
+
+            $lastEventId = $this->hub->captureMessage($message, $severity, $hint);
         }
 
         $context['lastEventId'] = $lastEventId;
