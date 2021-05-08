@@ -9,6 +9,8 @@ RUN echo -e "zend_extension=xdebug.so\n" \
         "xdebug.client_host=host.docker.internal\n" \
         "xdebug.mode=debug" \
     > /usr/local/etc/php/conf.d/docker-php-ext-xdebug.ini
+RUN echo -e "assert.exception=1" \
+    > /usr/local/etc/php/conf.d/assert.ini
 
 COPY tests/test_app/composer-install.sh /usr/bin/composer-install
 RUN composer-install \
