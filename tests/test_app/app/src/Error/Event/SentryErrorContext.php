@@ -6,9 +6,7 @@ namespace TestApp\Error\Event;
 use Cake\Core\Configure;
 use Cake\Event\Event;
 use Cake\Event\EventListenerInterface;
-use Cake\Http\ServerRequest;
 use Cake\Http\ServerRequestFactory;
-use Connehito\CakeSentry\Http\Client;
 use Sentry\State\Scope;
 use function Sentry\configureScope as sentryConfigureScope;
 

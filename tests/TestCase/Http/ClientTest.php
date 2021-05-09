@@ -13,7 +13,7 @@ use Connehito\CakeSentry\Http\Client;
 use Exception;
 use Prophecy\Argument;
 use Prophecy\PhpUnit\ProphecyTrait;
-use Prophecy\Prophecy\MethodProphecy;
+use Prophecy\Prophecy\MethodProphecy; // phpcs:ignore SlevomatCodingStandard.Namespaces.UnusedUses.UnusedUse
 use ReflectionProperty;
 use RuntimeException;
 use Sentry\ClientInterface;

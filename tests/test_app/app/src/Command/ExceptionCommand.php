@@ -20,7 +20,7 @@ class ExceptionCommand extends Command
     {
         $parser->addOption('placebo', [
             'short' => 'p',
-            'default' => true
+            'default' => true,
         ]);
         $parser->addArgument('placebo-arg', [
             'help' => 'A meaningless argument',

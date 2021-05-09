@@ -9,7 +9,7 @@ use Cake\Http\ServerRequestFactory;
 use Cake\Log\Log;
 use Cake\TestSuite\TestCase;
 use Connehito\CakeSentry\Error\ErrorLogger;
-use PHPUnit\Framework\MockObject\MockObject;
+use PHPUnit\Framework\MockObject\MockObject; // phpcs:ignore SlevomatCodingStandard.Namespaces.UnusedUses.UnusedUse
 use Psr\Log\LoggerInterface;
 use RuntimeException;
 
