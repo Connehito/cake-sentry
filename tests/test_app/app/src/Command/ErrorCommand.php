@@ -30,7 +30,6 @@ class ErrorCommand extends Command
 
         foreach ($errorLevels as $errorLevel => $errorMessage) {
             $this->triggerError($errorLevel, $errorMessage);
-
         }
     }
 
