@@ -8,7 +8,6 @@ use Cake\Core\InstanceConfigTrait;
 use Cake\Event\Event;
 use Cake\Event\EventDispatcherTrait;
 use Cake\Utility\Hash;
-use Psr\Http\Message\ServerRequestInterface;
 use RuntimeException;
 use Sentry\Breadcrumb;
 use Sentry\SentrySdk;
@@ -26,9 +25,6 @@ class Client
 
     /* @var Hub */
     protected $hub;
-
-    /* @var ServerRequestInterface */
-    protected $request;
 
     /**
      * Client constructor.
