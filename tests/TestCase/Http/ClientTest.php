@@ -7,7 +7,6 @@ use Cake\Core\Configure;
 use Cake\Event\Event;
 use Cake\Event\EventManager;
 use Cake\TestSuite\TestCase;
-use Closure;
 use Connehito\CakeSentry\Http\Client;
 use Exception;
 use Prophecy\Argument;
@@ -94,6 +93,11 @@ final class ClientTest extends TestCase
      */
     public function testSetupClientSetSendCallback(): void
     {
+        $callback = function (\Sentry\Event $event, ?\Sentry\EventHint $hint) {
+            return 'this is user callback';
+        };
+        Configure::write('Sentry.before_send', $callback);
+
         $subject = new Client([]);
         $actual = $subject
             ->getHub()
@@ -101,7 +105,10 @@ final class ClientTest extends TestCase
             ->getOptions()
             ->getBeforeSendCallback();
 
-        $this->assertInstanceOf(Closure::class, $actual);
+        $this->assertSame(
+            $callback(\Sentry\Event::createEvent(), null),
+            $actual(\Sentry\Event::createEvent(), null)
+        );
     }
 
     /**
