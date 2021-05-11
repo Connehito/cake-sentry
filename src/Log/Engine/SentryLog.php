@@ -28,6 +28,7 @@ class SentryLog extends BaseLog
      */
     public function log($level, $message, array $context = [])
     {
+        $context['stackTrace'] = debug_backtrace();
         $this->client->capture($level, $message, $context);
     }
 }

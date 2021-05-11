@@ -198,15 +198,11 @@ final class ClientTest extends TestCase
     }
 
     /**
-     * Test capture error fill breadcrumbs
+     * Test capture error fill with injected breadcrumbs
      */
     public function testCaptureErrorBuildBreadcrumbs(): void
     {
-        $stacks = debug_backtrace(DEBUG_BACKTRACE_PROVIDE_OBJECT);
-        $expect = [
-            'file' => $stacks[2]['file'],
-            'line' => $stacks[2]['line'],
-        ];
+        $stackTrace = debug_backtrace(DEBUG_BACKTRACE_PROVIDE_OBJECT);
 
         $subject = new Client([]);
         $sentryClientP = $this->prophesize(ClientInterface::class);
@@ -216,14 +212,14 @@ final class ClientTest extends TestCase
                 Argument::any(),
                 Argument::any(),
                 Argument::any(),
-                Argument::that(function (EventHint $a) use (&$expect) {
-                    $frames = $a->stacktrace->getFrames();
-                    $actual = array_slice($frames, -2, 1)[0];
-                    if ($actual->getFile() !== $expect['file']) {
-                        $this->fail('stacktrace "file" does not t match');
+                Argument::that(function (EventHint $actualHint) use ($stackTrace) {
+                    $frames = $actualHint->stacktrace->getFrames();
+                    $actual = array_pop($frames);
+                    if ($actual->getFile() !== $stackTrace[0]['file']) {
+                        $this->fail('first frame does not match with "file"');
                     }
-                    if ($actual->getLine() !== $expect['line']) {
-                        $this->fail('stacktrace "line" does not t match');
+                    if ($actual->getLine() !== $stackTrace[0]['line']) {
+                        $this->fail('first frame does not match with "line"');
                     }
 
                     return true;
@@ -237,7 +233,7 @@ final class ClientTest extends TestCase
 
         $subject->getHub()->bindClient($sentryClientP->reveal());
 
-        $subject->capture('warning', 'some error', []);
+        $subject->capture('warning', 'some error', compact('stackTrace'));
     }
 
     /**

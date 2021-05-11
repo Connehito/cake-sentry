@@ -45,7 +45,11 @@ final class SentryLogTest extends TestCase
         $client = $this->getClientProp()->getValue($this->subject);
         $client->expects($this->once())
             ->method('capture')
-            ->with($level, $message, $context);
+            ->with(
+                $level,
+                $message,
+                $this->arrayHasKey('stackTrace')
+            );
 
         $this->subject->log($level, $message, $context);
     }

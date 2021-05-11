@@ -86,18 +86,24 @@ class Client
         if ($exception) {
             $lastEventId = $this->hub->captureException($exception);
         } else {
-            $stacks = array_slice(debug_backtrace(DEBUG_BACKTRACE_PROVIDE_OBJECT), 3);
             if (is_string($level) && method_exists(Severity::class, $level)) {
                 $severity = (Severity::class . '::' . $level)();
             } else {
                 $severity = Severity::fromError($level);
             }
-            $stackTrace = $this->stackTraceBuilder->buildFromBacktrace($stacks, $stacks[0]['file'], $stacks[0]['line']);
-
             $hint = new EventHint();
             $hint->extra = $context;
-            $hint->stacktrace = $stackTrace;
 
+            $stackTrace = $context['stackTrace'] ?? false;
+            if ($stackTrace) {
+                $hint->stacktrace = $this->stackTraceBuilder->buildFromBacktrace(
+                    $stackTrace,
+                    $stackTrace[0]['file'],
+                    $stackTrace[0]['line']
+                );
+            }
+
+            $severity = $this->convertLevelToSeverity($level);
             $lastEventId = $this->hub->captureMessage($message, $severity, $hint);
         }
 
