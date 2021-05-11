@@ -7,11 +7,11 @@ return [
     'Sentry' => [
         'dsn' => env('SENTRY_DSN'),
         'integrations' => [
-            IgnoreErrorsIntegration::class => [
+            new IgnoreErrorsIntegration([
                 'ignore_exceptions' => [
                     NotFoundException::class,
                 ],
-            ],
+            ]),
         ],
     ],
 ];
