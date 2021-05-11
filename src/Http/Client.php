@@ -86,11 +86,6 @@ class Client
         if ($exception) {
             $lastEventId = $this->hub->captureException($exception);
         } else {
-            if (is_string($level) && method_exists(Severity::class, $level)) {
-                $severity = (Severity::class . '::' . $level)();
-            } else {
-                $severity = Severity::fromError($level);
-            }
             $hint = new EventHint();
             $hint->extra = $context;
 
@@ -129,5 +124,20 @@ class Client
 
         $event = new Event('CakeSentry.Client.afterSetup', $this);
         $this->getEventManager()->dispatch($event);
+    }
+
+    /**
+     * Convert error info to severity
+     *
+     * @param string|int $level Error name or level(int)
+     * @return \Sentry\Severity
+     */
+    private function convertLevelToSeverity($level): Severity
+    {
+        if (is_string($level) && method_exists(Severity::class, $level)) {
+            return (Severity::class . '::' . $level)();
+        }
+
+        return Severity::fromError($level);
     }
 }
