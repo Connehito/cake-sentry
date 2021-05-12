@@ -21,6 +21,7 @@ use Cake\Http\Exception\BadRequestException;
 use Cake\Http\Exception\ForbiddenException;
 use Cake\Http\Exception\NotFoundException;
 use Cake\Http\Response;
+use Cake\Log\Log;
 use Cake\Utility\Inflector;
 use Cake\View\Exception\MissingTemplateException;
 
@@ -88,6 +89,14 @@ class PagesController extends AppController
         throw new $gottenException($message, $errorCode);
     }
 
+    public function logging(string $errorName)
+    {
+        $message = $this->getRequest()->getQuery('message', 'some error');
+        $this->doLog($errorName, $message);
+
+        $this->render('dump_vars');
+    }
+
     /**
      * Displays a view
      *
@@ -126,5 +135,11 @@ class PagesController extends AppController
             }
             throw new NotFoundException();
         }
+    }
+
+    private function doLog($errorName, string $message)
+    {
+        $this->log($message, $errorName, ['contextual data' => 'with hogehoge']);
+        Log::{$errorName}($message, ['contextual data' => 'with fugafuga']);
     }
 }

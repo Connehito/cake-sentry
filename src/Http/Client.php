@@ -9,9 +9,11 @@ use Cake\Event\Event;
 use Cake\Event\EventDispatcherTrait;
 use Cake\Utility\Hash;
 use RuntimeException;
-use Sentry\Breadcrumb;
+use Sentry\EventHint;
 use Sentry\SentrySdk;
+use Sentry\Serializer\RepresentationSerializer;
 use Sentry\Severity;
+use Sentry\StacktraceBuilder;
 use Sentry\State\Hub;
 use function Sentry\init;
 
@@ -21,10 +23,22 @@ class Client
     use InstanceConfigTrait;
 
     /* @var array default instance config */
-    protected $_defaultConfig = [];
+    protected $_defaultConfig = [
+        'sentry' => [
+            'prefixes' => [
+                APP,
+            ],
+            'in_app_exclude' => [
+                ROOT . DS . 'vendor' . DS,
+            ],
+        ],
+    ];
 
     /* @var Hub */
     protected $hub;
+
+    /* @var StacktraceBuilder */
+    protected $stackTraceBuilder;
 
     /**
      * Client constructor.
@@ -33,8 +47,16 @@ class Client
      */
     public function __construct(array $config)
     {
+        $userConfig = Configure::read('Sentry');
+        if ($userConfig) {
+            $this->_defaultConfig['sentry'] = array_merge($this->_defaultConfig['sentry'], $userConfig);
+        }
         $this->setConfig($config);
         $this->setupClient();
+        $this->stackTraceBuilder = new StacktraceBuilder(
+            $this->getHub()->getClient()->getOptions(),
+            new RepresentationSerializer($this->getHub()->getClient()->getOptions())
+        );
     }
 
     /**
@@ -64,25 +86,20 @@ class Client
         if ($exception) {
             $lastEventId = $this->hub->captureException($exception);
         } else {
-            $stacks = array_slice(debug_backtrace(DEBUG_BACKTRACE_PROVIDE_OBJECT), 3);
-            if (is_string($level) && method_exists(Severity::class, $level)) {
-                $severity = (Severity::class . '::' . $level)();
-            } else {
-                $severity = Severity::fromError($level);
+            $hint = new EventHint();
+            $hint->extra = $context;
+
+            $stackTrace = $context['stackTrace'] ?? false;
+            if ($stackTrace) {
+                $hint->stacktrace = $this->stackTraceBuilder->buildFromBacktrace(
+                    $stackTrace,
+                    $stackTrace[0]['file'],
+                    $stackTrace[0]['line']
+                );
             }
-            foreach ($stacks as $stack) {
-                $method = isset($stack['class']) ? "{$stack['class']}::{$stack['function']}" : $stack['function'];
-                unset($stack['class']);
-                unset($stack['function']);
-                $this->hub->addBreadcrumb(new Breadcrumb(
-                    (string)$severity,
-                    Breadcrumb::TYPE_ERROR,
-                    'method',
-                    $method,
-                    $stack
-                ));
-            }
-            $lastEventId = $this->hub->captureMessage($message, $severity);
+
+            $severity = $this->convertLevelToSeverity($level);
+            $lastEventId = $this->hub->captureMessage($message, $severity, $hint);
         }
 
         $context['lastEventId'] = $lastEventId;
@@ -97,7 +114,7 @@ class Client
      */
     protected function setupClient(): void
     {
-        $config = (array)Configure::read('Sentry');
+        $config = $this->getConfig('sentry');
         if (!Hash::check($config, 'dsn')) {
             throw new RuntimeException('Sentry DSN not provided.');
         }
@@ -107,5 +124,20 @@ class Client
 
         $event = new Event('CakeSentry.Client.afterSetup', $this);
         $this->getEventManager()->dispatch($event);
+    }
+
+    /**
+     * Convert error info to severity
+     *
+     * @param string|int $level Error name or level(int)
+     * @return \Sentry\Severity
+     */
+    private function convertLevelToSeverity($level): Severity
+    {
+        if (is_string($level) && method_exists(Severity::class, $level)) {
+            return (Severity::class . '::' . $level)();
+        }
+
+        return Severity::fromError($level);
     }
 }

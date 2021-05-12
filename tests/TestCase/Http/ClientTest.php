@@ -7,15 +7,14 @@ use Cake\Core\Configure;
 use Cake\Event\Event;
 use Cake\Event\EventManager;
 use Cake\TestSuite\TestCase;
-use Closure;
 use Connehito\CakeSentry\Http\Client;
 use Exception;
 use Prophecy\Argument;
 use Prophecy\PhpUnit\ProphecyTrait;
 use Prophecy\Prophecy\MethodProphecy; // phpcs:ignore SlevomatCodingStandard.Namespaces.UnusedUses.UnusedUse
-use ReflectionProperty;
 use RuntimeException;
 use Sentry\ClientInterface;
+use Sentry\EventHint;
 use Sentry\EventId;
 use Sentry\Options;
 use Sentry\Severity;
@@ -47,6 +46,25 @@ final class ClientTest extends TestCase
     }
 
     /**
+     * Check the configuration values are merged into the default-config.
+     */
+    public function testSetUpClientMergeConfig(): void
+    {
+        $userConfig = [
+            'dsn' => false,
+            'in_app_exclude' => ['/app/vendor', '/app/tmp',],
+            'server_name' => 'test-server',
+        ];
+
+        Configure::write('Sentry', $userConfig);
+        $subject = new Client([]);
+
+        $this->assertSame([APP], $subject->getConfig('sentry.prefixes'), 'Default value not applied');
+        $this->assertSame($userConfig['in_app_exclude'], $subject->getConfig('sentry.in_app_exclude'), 'Default value is not overwritten');
+        $this->assertSame(false, $subject->getConfig('sentry.dsn'), 'Set value is not addes');
+    }
+
+    /**
      * Check constructor throws exception unless dsn is given
      */
     public function testSetupClientNotHasDsn(): void
@@ -75,6 +93,11 @@ final class ClientTest extends TestCase
      */
     public function testSetupClientSetSendCallback(): void
     {
+        $callback = function (\Sentry\Event $event, ?\Sentry\EventHint $hint) {
+            return 'this is user callback';
+        };
+        Configure::write('Sentry.before_send', $callback);
+
         $subject = new Client([]);
         $actual = $subject
             ->getHub()
@@ -82,7 +105,10 @@ final class ClientTest extends TestCase
             ->getOptions()
             ->getBeforeSendCallback();
 
-        $this->assertInstanceOf(Closure::class, $actual);
+        $this->assertSame(
+            $callback(\Sentry\Event::createEvent(), null),
+            $actual(\Sentry\Event::createEvent(), null)
+        );
     }
 
     /**
@@ -139,7 +165,7 @@ final class ClientTest extends TestCase
                 'some error',
                 Severity::fromError(E_WARNING),
                 Argument::type(Scope::class),
-                null
+                Argument::type(EventHint::class)
             )
             ->shouldBeCalledOnce()
             ->willReturn(EventId::generate());
@@ -179,15 +205,11 @@ final class ClientTest extends TestCase
     }
 
     /**
-     * Test capture error fill breadcrumbs
+     * Test capture error fill with injected breadcrumbs
      */
     public function testCaptureErrorBuildBreadcrumbs(): void
     {
-        $stacks = debug_backtrace(DEBUG_BACKTRACE_PROVIDE_OBJECT);
-        $expect = [
-            'file' => $stacks[2]['file'],
-            'line' => $stacks[2]['line'],
-        ];
+        $stackTrace = debug_backtrace(DEBUG_BACKTRACE_PROVIDE_OBJECT);
 
         $subject = new Client([]);
         $sentryClientP = $this->prophesize(ClientInterface::class);
@@ -196,20 +218,19 @@ final class ClientTest extends TestCase
             ->captureMessage(
                 Argument::any(),
                 Argument::any(),
-                Argument::that(function ($a) use (&$expect) {
-                    $breadcrumbsProp = new ReflectionProperty($a, 'breadcrumbs');
-                    $breadcrumbsProp->setAccessible(true);
-                    $breadcrumbs = $breadcrumbsProp->getValue($a);
-                    $metadata = $breadcrumbs[0]->getMetaData();
-                    foreach ($expect as $field => $val) {
-                        if ($metadata[$field] !== $val) {
-                            return false;
-                        }
+                Argument::any(),
+                Argument::that(function (EventHint $actualHint) use ($stackTrace) {
+                    $frames = $actualHint->stacktrace->getFrames();
+                    $actual = array_pop($frames);
+                    if ($actual->getFile() !== $stackTrace[0]['file']) {
+                        $this->fail('first frame does not match with "file"');
+                    }
+                    if ($actual->getLine() !== $stackTrace[0]['line']) {
+                        $this->fail('first frame does not match with "line"');
                     }
 
                     return true;
-                }),
-                null
+                })
             )
             ->shouldBeCalledOnce()
             ->willReturn(EventId::generate());
@@ -219,7 +240,7 @@ final class ClientTest extends TestCase
 
         $subject->getHub()->bindClient($sentryClientP->reveal());
 
-        $subject->capture('warning', 'some error', []);
+        $subject->capture('warning', 'some error', compact('stackTrace'));
     }
 
     /**

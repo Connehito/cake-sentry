@@ -61,6 +61,7 @@ $routes->scope('/', function (RouteBuilder $builder) {
     $builder->connect('/pages/*', ['controller' => 'Pages', 'action' => 'display']);
     $builder->connect('/error/*', ['controller' => 'Pages', 'action' => 'error']);
     $builder->connect('/exception/*', ['controller' => 'Pages', 'action' => 'exception']);
+    $builder->connect('/log/*', ['controller' => 'Pages', 'action' => 'logging']);
 });
 
 /*
