@@ -151,11 +151,11 @@ final class ClientTest extends TestCase
     }
 
     /**
-     * Test capture error
+     * Test capture other than exception
      *
      * @return array // FIXME: In fact array<string,MethodProphecy[]>, but getMethodProphecies declare as MethodProphecy[]
      */
-    public function testCaptureError(): array
+    public function testCaptureNotHavingException(): array
     {
         $subject = new Client([]);
         $sentryClientP = $this->prophesize(ClientInterface::class);
@@ -185,14 +185,14 @@ final class ClientTest extends TestCase
     }
 
     /**
-     * Test capture error compatible with  the error-level is specified by int or string
+     * Test capture compatible with  the error-level is specified by int or string
      *
-     * @depends testCaptureError
+     * @depends testCaptureNotHavingException
      * @param array&array<string,MethodProphecy[]> $mockMethodList
      */
-    public function testCaptureErrorWithErrorLevelInteger(array $mockMethodList): void
+    public function testCaptureWithErrorLevelInteger(array $mockMethodList): void
     {
-        // Rebuild ObjectProphecy in the same context with testCaptureError.
+        // Rebuild ObjectProphecy in the same context with testCaptureNotHavingException.
         $sentryClientP = $this->prophesize(ClientInterface::class);
         foreach ($mockMethodList as $mockMethod) {
             $sentryClientP->addMethodProphecy($mockMethod[0]);
@@ -205,9 +205,9 @@ final class ClientTest extends TestCase
     }
 
     /**
-     * Test capture error fill with injected breadcrumbs
+     * Test capture fill with injected breadcrumbs
      */
-    public function testCaptureErrorBuildBreadcrumbs(): void
+    public function testCaptureBuildBreadcrumbs(): void
     {
         $stackTrace = debug_backtrace(DEBUG_BACKTRACE_PROVIDE_OBJECT);
 
@@ -244,9 +244,9 @@ final class ClientTest extends TestCase
     }
 
     /**
-     * Test capture error pass cakephp-log's context as additional data
+     * Test capture pass cakephp-log's context as additional data
      */
-    public function testCaptureErrorWithAdditionalData(): void
+    public function testCaptureWithAdditionalData(): void
     {
         $callback = function (\Sentry\Event $event, ?\Sentry\EventHint $hint) use (&$actualEvent) {
             $actualEvent = $event;
