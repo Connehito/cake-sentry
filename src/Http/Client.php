@@ -72,7 +72,7 @@ class Client
     /**
      * Capture exception for sentry.
      *
-     * @param mixed $level error level
+     * @param string|int $level error level
      * @param string $message error message
      * @param array $context subject
      * @return void
