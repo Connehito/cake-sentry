@@ -244,6 +244,29 @@ final class ClientTest extends TestCase
     }
 
     /**
+     * Test capture error pass cakephp-log's context as additional data
+     */
+    public function testCaptureErrorWithAdditionalData(): void
+    {
+        $callback = function (\Sentry\Event $event, ?\Sentry\EventHint $hint) use (&$actualEvent) {
+            $actualEvent = $event;
+        };
+
+        $userConfig = [
+            'dsn' => false,
+            'before_send' => $callback,
+        ];
+
+        Configure::write('Sentry', $userConfig);
+        $subject = new Client([]);
+
+        $context = ['this is' => 'additional'];
+        $subject->capture('warning', 'some error', $context);
+
+        $this->assertSame($context, $actualEvent->getExtra());
+    }
+
+    /**
      * Check capture dispatch beforeCapture
      */
     public function testCaptureDispatchBeforeCapture(): void

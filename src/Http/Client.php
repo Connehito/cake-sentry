@@ -87,7 +87,6 @@ class Client
             $lastEventId = $this->hub->captureException($exception);
         } else {
             $hint = new EventHint();
-            $hint->extra = $context;
 
             $stackTrace = $context['stackTrace'] ?? false;
             if ($stackTrace) {
@@ -96,7 +95,11 @@ class Client
                     $stackTrace[0]['file'],
                     $stackTrace[0]['line']
                 );
+                unset($context['stackTrace']);
             }
+            $this->hub->configureScope(function (\Sentry\State\Scope $scope) use ($context) {
+                $scope->setExtras($context);
+            });
 
             $severity = $this->convertLevelToSeverity($level);
             $lastEventId = $this->hub->captureMessage($message, $severity, $hint);
