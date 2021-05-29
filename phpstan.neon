@@ -5,5 +5,5 @@ parameters:
       - src
       - tests/TestCase
     level: 5
-    autoload_files:
+    bootstrapFiles:
       - tests/bootstrap.php
