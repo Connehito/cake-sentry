@@ -6,16 +6,16 @@ namespace Connehito\CakeSentry\Test\TestCase\Http;
 use Cake\Core\Configure;
 use Cake\Event\Event;
 use Cake\Event\EventManager;
-use Cake\Http\Exception\NotFoundException;
 use Cake\TestSuite\TestCase;
-use Closure;
 use Connehito\CakeSentry\Http\Client;
 use Exception;
 use Prophecy\Argument;
-use Prophecy\Prophecy\MethodProphecy;
-use ReflectionProperty;
+use Prophecy\PhpUnit\ProphecyTrait;
+use Prophecy\Prophecy\MethodProphecy; // phpcs:ignore SlevomatCodingStandard.Namespaces.UnusedUses.UnusedUse
 use RuntimeException;
 use Sentry\ClientInterface;
+use Sentry\EventHint;
+use Sentry\EventId;
 use Sentry\Options;
 use Sentry\Severity;
 use Sentry\State\Hub;
@@ -23,6 +23,8 @@ use Sentry\State\Scope;
 
 final class ClientTest extends TestCase
 {
+    use ProphecyTrait;
+
     /**
      * @inheritDoc
      */
@@ -44,6 +46,25 @@ final class ClientTest extends TestCase
     }
 
     /**
+     * Check the configuration values are merged into the default-config.
+     */
+    public function testSetUpClientMergeConfig(): void
+    {
+        $userConfig = [
+            'dsn' => false,
+            'in_app_exclude' => ['/app/vendor', '/app/tmp',],
+            'server_name' => 'test-server',
+        ];
+
+        Configure::write('Sentry', $userConfig);
+        $subject = new Client([]);
+
+        $this->assertSame([APP], $subject->getConfig('sentry.prefixes'), 'Default value not applied');
+        $this->assertSame($userConfig['in_app_exclude'], $subject->getConfig('sentry.in_app_exclude'), 'Default value is not overwritten');
+        $this->assertSame(false, $subject->getConfig('sentry.dsn'), 'Set value is not addes');
+    }
+
+    /**
      * Check constructor throws exception unless dsn is given
      */
     public function testSetupClientNotHasDsn(): void
@@ -59,27 +80,12 @@ final class ClientTest extends TestCase
      */
     public function testSetupClientSetOptions(): void
     {
-        Configure::write('Sentry.excluded_exceptions', [NotFoundException::class]);
-        $beforeSend = (new class
-        {
-            public function __invoke()
-            {
-                return true;
-            }
-        });
-        Configure::write('Sentry.before_send', $beforeSend);
+        Configure::write('Sentry.server_name', 'test-server');
 
         $subject = new Client([]);
         $options = $subject->getHub()->getClient()->getOptions();
 
-        $this->assertSame(
-            [NotFoundException::class],
-            $options->getExcludedExceptions()
-        );
-        $this->assertSame(
-            get_class($beforeSend),
-            get_class($options->getBeforeSendCallback())
-        );
+        $this->assertSame('test-server', $options->getServerName());
     }
 
     /**
@@ -87,6 +93,11 @@ final class ClientTest extends TestCase
      */
     public function testSetupClientSetSendCallback(): void
     {
+        $callback = function (\Sentry\Event $event, ?\Sentry\EventHint $hint) {
+            return 'this is user callback';
+        };
+        Configure::write('Sentry.before_send', $callback);
+
         $subject = new Client([]);
         $actual = $subject
             ->getHub()
@@ -94,7 +105,10 @@ final class ClientTest extends TestCase
             ->getOptions()
             ->getBeforeSendCallback();
 
-        $this->assertInstanceOf(Closure::class, $actual);
+        $this->assertSame(
+            $callback(\Sentry\Event::createEvent(), null),
+            $actual(\Sentry\Event::createEvent(), null)
+        );
     }
 
     /**
@@ -132,27 +146,33 @@ final class ClientTest extends TestCase
         );
 
         $sentryClientP
-            ->captureException($exception, Argument::type(Scope::class))
-            ->shouldHaveBeenCalled();
+            ->captureException($exception, Argument::type(Scope::class), null)
+            ->shouldHaveBeenCalledOnce();
     }
 
     /**
-     * Test capture error
+     * Test capture other than exception
      *
      * @return array // FIXME: In fact array<string,MethodProphecy[]>, but getMethodProphecies declare as MethodProphecy[]
      */
-    public function testCaptureError(): array
+    public function testCaptureNotHavingException(): array
     {
         $subject = new Client([]);
         $sentryClientP = $this->prophesize(ClientInterface::class);
-        $sentryClientP->getOptions()->shouldBeCalled()->willReturn(new Options());
+        $sentryClientP->getOptions()->willReturn(new Options());
         $sentryClientP
             ->captureMessage(
                 'some error',
                 Severity::fromError(E_WARNING),
-                Argument::type(Scope::class)
+                Argument::type(Scope::class),
+                Argument::type(EventHint::class)
             )
-            ->shouldBeCalled();
+            ->shouldBeCalledOnce()
+            ->willReturn(EventId::generate());
+            // NOTE:
+            // This itself is not of interest for the test case,
+            // but for ProphecyMock's technical reasons, the return-value needs to be a real `EvnetId`
+
         $subject->getHub()->bindClient($sentryClientP->reveal());
 
         $subject->capture(
@@ -165,15 +185,14 @@ final class ClientTest extends TestCase
     }
 
     /**
-     * Test capture error compatible with  the error-level is specified by int or string
+     * Test capture compatible with  the error-level is specified by int or string
      *
-     * @depends testCaptureError
-     *
+     * @depends testCaptureNotHavingException
      * @param array&array<string,MethodProphecy[]> $mockMethodList
      */
-    public function testCaptureErrorWithErrorLevelInteger(array $mockMethodList): void
+    public function testCaptureWithErrorLevelInteger(array $mockMethodList): void
     {
-        // Rebuild ObjectProphecy in the same context with testCaptureError.
+        // Rebuild ObjectProphecy in the same context with testCaptureNotHavingException.
         $sentryClientP = $this->prophesize(ClientInterface::class);
         foreach ($mockMethodList as $mockMethod) {
             $sentryClientP->addMethodProphecy($mockMethod[0]);
@@ -186,41 +205,65 @@ final class ClientTest extends TestCase
     }
 
     /**
-     * Test capture error fill breadcrumbs
+     * Test capture fill with injected breadcrumbs
      */
-    public function testCaptureErrorBuildBreadcrumbs(): void
+    public function testCaptureBuildBreadcrumbs(): void
     {
-        $stacks = debug_backtrace(DEBUG_BACKTRACE_PROVIDE_OBJECT);
-        $expect = [
-            'file' => $stacks[2]['file'],
-            'line' => $stacks[2]['line'],
-        ];
+        $stackTrace = debug_backtrace(DEBUG_BACKTRACE_PROVIDE_OBJECT);
 
         $subject = new Client([]);
         $sentryClientP = $this->prophesize(ClientInterface::class);
-        $sentryClientP->getOptions()->shouldBeCalled()->willReturn(new Options());
+        $sentryClientP->getOptions()->willReturn(new Options());
         $sentryClientP
             ->captureMessage(
                 Argument::any(),
                 Argument::any(),
-                Argument::that(function ($a) use (&$expect) {
-                    $breadcrumbsProp = new ReflectionProperty($a, 'breadcrumbs');
-                    $breadcrumbsProp->setAccessible(true);
-                    $breadcrumbs = $breadcrumbsProp->getValue($a);
-                    $metadata = $breadcrumbs[0]->getMetaData();
-                    foreach ($expect as $field => $val) {
-                        if ($metadata[$field] !== $val) {
-                            return false;
-                        }
+                Argument::any(),
+                Argument::that(function (EventHint $actualHint) use ($stackTrace) {
+                    $frames = $actualHint->stacktrace->getFrames();
+                    $actual = array_pop($frames);
+                    if ($actual->getFile() !== $stackTrace[0]['file']) {
+                        $this->fail('first frame does not match with "file"');
+                    }
+                    if ($actual->getLine() !== $stackTrace[0]['line']) {
+                        $this->fail('first frame does not match with "line"');
                     }
 
                     return true;
                 })
             )
-            ->shouldBeCalled();
+            ->shouldBeCalledOnce()
+            ->willReturn(EventId::generate());
+            // NOTE:
+            // This itself is not of interest for the test case,
+            // but for ProphecyMock's technical reasons, the return-value needs to be a real `EvnetId`
+
         $subject->getHub()->bindClient($sentryClientP->reveal());
 
-        $subject->capture('warning', 'some error', []);
+        $subject->capture('warning', 'some error', compact('stackTrace'));
+    }
+
+    /**
+     * Test capture pass cakephp-log's context as additional data
+     */
+    public function testCaptureWithAdditionalData(): void
+    {
+        $callback = function (\Sentry\Event $event, ?\Sentry\EventHint $hint) use (&$actualEvent) {
+            $actualEvent = $event;
+        };
+
+        $userConfig = [
+            'dsn' => false,
+            'before_send' => $callback,
+        ];
+
+        Configure::write('Sentry', $userConfig);
+        $subject = new Client([]);
+
+        $context = ['this is' => 'additional'];
+        $subject->capture('warning', 'some error', $context);
+
+        $this->assertSame($context, $actualEvent->getExtra());
     }
 
     /**
@@ -250,12 +293,12 @@ final class ClientTest extends TestCase
      */
     public function testCaptureDispatchAfterCapture(): void
     {
-        $lastEventId = 'aaa';
+        $lastEventId = EventId::generate();
 
         $subject = new Client([]);
         $sentryClientP = $this->prophesize(ClientInterface::class);
         $sentryClientP->captureException(Argument::cetera())
-            ->shouldBeCalled()
+            ->shouldBeCalledOnce()
             ->willReturn($lastEventId);
         $subject->getHub()->bindClient($sentryClientP->reveal());
 

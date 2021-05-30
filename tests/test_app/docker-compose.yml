@@ -1,6 +1,6 @@
 version: "3.7"
 services:
-  test-app:
+  test-app: &test-app
     volumes:
       - ../../src:/dist/src
       - ../../config:/dist/config
@@ -8,8 +8,19 @@ services:
       - ../..:/app
     ports:
       - "8080:80"
+    env_file:
+      - app.env
     container_name: cake-sentry-test-app
     build:
       context: ../..
       dockerfile: ./tests/test_app/Dockerfile
     command: bash -c "/app/tests/test_app/app/bin/cake server -H 0.0.0.0 -p 80"
+    working_dir: /app/tests/test_app/app
+  test-app-php7:
+    <<: *test-app
+    ports:
+      - "8081:80"
+    container_name: cake-sentry-test-app-php7
+    build:
+      context: ../..
+      dockerfile: ./tests/test_app/Dockerfile.php7

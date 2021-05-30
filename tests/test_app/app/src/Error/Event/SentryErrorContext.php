@@ -3,11 +3,10 @@ declare(strict_types=1);
 
 namespace TestApp\Error\Event;
 
+use Cake\Core\Configure;
 use Cake\Event\Event;
 use Cake\Event\EventListenerInterface;
-use Cake\Http\ServerRequest;
 use Cake\Http\ServerRequestFactory;
-use Connehito\CakeSentry\Http\Client;
 use Sentry\State\Scope;
 use function Sentry\configureScope as sentryConfigureScope;
 
@@ -29,7 +28,7 @@ class SentryErrorContext implements EventListenerInterface
         $options = $subject->getHub()->getClient()->getOptions();
 
         $options->setEnvironment('test_app');
-        $options->setRelease('2.0.0@dev');
+        $options->setRelease('4.0.0@dev');
     }
 
     public function setContext(Event $event): void
@@ -51,6 +50,14 @@ class SentryErrorContext implements EventListenerInterface
                     'foo' => 'bar',
                     'request attributes' => $request->getAttributes(),
                 ]);
+            });
+        } else {
+            sentryConfigureScope(function (Scope $scope) use ($event) {
+                $argv = env('argv');
+                array_shift($argv);
+                array_unshift($argv, env('_'));
+                $scope->setExtra('command', implode(' ', $argv));
+                $scope->setTag('cakephp_version', Configure::version());
             });
         }
     }

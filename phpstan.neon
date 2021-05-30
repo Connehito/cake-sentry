@@ -1,9 +1,9 @@
 includes:
-- vendor/jangregor/phpstan-prophecy/src/extension.neon
+- vendor/jangregor/phpstan-prophecy/extension.neon
 parameters:
     paths:
       - src
       - tests/TestCase
     level: 5
-    autoload_files:
+    bootstrapFiles:
       - tests/bootstrap.php

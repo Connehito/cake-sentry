@@ -3,6 +3,7 @@ php:
   - 7.2
   - 7.3
   - 7.4
+  - 8.0
 
 cache:
   directories:
@@ -15,13 +16,15 @@ env:
 
 matrix:
   include:
-    - php: 7.4
+    - php: 8.0
       env: PREFER_LOWEST="" TEST=1 CODECOV=1 STAN=0
-    - php: 7.4
+    - php: 8.0
       env: PREFER_LOWEST="" TEST=0 CODECOV=0 STAN=1
 
 before_script:
   - phpenv config-rm xdebug.ini
+  - echo "assert.exception = 1" >> ~/.phpenv/versions/$(phpenv version-name)/etc/php.ini
+  - if [[ $TRAVIS_PHP_VERSION = 7.2 ]]; then composer remove --dev phpspec/prophecy-phpunit; fi
   - composer update --prefer-dist --no-interaction $PREFER_LOWEST
   - composer show -i
   # @see https://github.com/cakephp/cakephp/pull/13567#issuecomment-525844184
