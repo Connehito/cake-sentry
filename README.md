@@ -9,7 +9,7 @@ CakePHP integration for Sentry.
 [![License](https://poser.pugx.org/connehito/cake-sentry/license)](https://packagist.org/packages/connehito/cake-sentry)
 
 ## Requirements
-- PHP 7.2+
+- PHP 7.2+ / PHP 8.0+
 - CakePHP 4.0+
 - and [Sentry](https://sentry.io) account
 
@@ -20,6 +20,23 @@ CakePHP integration for Sentry.
 ```
 composer require connehito/cake-sentry:^3.0
 ```
+
+If you do not have the ` php-http/async-client-implementation` package, you will need to install it together.  
+In that case, you will get a message like the following
+
+```
+Problem 1
+- sentry/sentry[3.2.0, ... , 3.3.0] require php-http/async-client-implementation ^1.0 -> could not be found in any version, but the following packages provide it:
+```
+
+Then, you can use the following command to provide a package such as `symfony/http-client`.
+
+```
+composer require connehito/cake-sentry symfony/http-client
+```
+
+You can find the available packages on [Packagist](https://packagist.org/providers/php-http/async-client-implementation).
+
 
 ## Usage
 
