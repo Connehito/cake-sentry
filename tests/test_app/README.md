@@ -16,13 +16,16 @@ Before do it, you must create Sentry PJ and get your DSN.
 Please check Sentry's document about DSN  
 https://docs.sentry.io/error-reporting/quickstart/?platform=php#configure-the-sdk
 
-1. `cp tests/test_app/app/config/.env.example tests/test_app/app/config/.env`.
+1. `cp tests/test_app/app/config/.env.example tests/test_app/app/app.env`.
 2. Set your DSN to `.env`.
 3. `docker-compose run --rm  test-app bash` to go into container.
 4. `cd /app/tests/test_app & composer install` if vendor dir is not created.
 5. exit container.
 6. `docker-compose up` to run CakePHP built-in server.
 7. Access bellow urls.
+
+### On PHP7 container
+You can use `test-app-php7` instead of `test-app`.
 
 ### To check error
 `http://127.0.0.1:8080/error/:error_level`
@@ -49,3 +52,16 @@ Like:
 
 If you add `?message` query, then set error message.
 Like `http://127.0.0.1:8080/exception/method_not_allowed/400?message=you%20cant%20access%20here`
+
+### To check log
+`http://127.0.0.1:8080/log/:log_level_name`
+
+Replace `:log_level_name` to log level's name.
+
+Like:
+
+* http://127.0.0.1:8080/log/info // log message as LOG_INFO
+* http://127.0.0.1:8080/log/notice // log message as LOG_NOTICE
+
+If you add `?message` query, then set error message.
+Like `http://127.0.0.1:8080/log/warning?message=some-events-to-logging`
