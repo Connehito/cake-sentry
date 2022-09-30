@@ -3,9 +3,9 @@
     "description": "Sentry plugin for CakePHP",
     "type": "cakephp-plugin",
     "require": {
-        "php": "^7.2 || ^8.0",
+        "php": "^7.4 || ^8.0",
         "cakephp/cakephp": "^4.0",
-        "sentry/sentry": "^3.2"
+        "sentry/sdk": "^3.2"
     },
     "require-dev": {
         "cakephp/cakephp-codesniffer": "@stable",
@@ -28,10 +28,14 @@
     },
     "scripts": {
         "test": "phpunit",
-        "cs-check": "phpcs --colors -p ./src ./tests/TestCase"
+        "cs-check": "phpcs --colors -p ./src ./tests/TestCase",
+        "cs-fix": "phpcbf --colors -p ./src ./tests/TestCase"
     },
     "config": {
-        "sort-packages": true
+        "sort-packages": true,
+        "allow-plugins": {
+            "dealerdirect/phpcodesniffer-composer-installer": true
+        }
     },
     "authors": [
         {

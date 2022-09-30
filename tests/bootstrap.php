@@ -103,21 +103,3 @@ MutableDate::setTestNow(MutableDate::now());
 
 ini_set('intl.default_locale', 'en_US');
 ini_set('session.gc_divisor', '1');
-
-#loadPHPUnitAliases();
-
-/**
- * NOTE:
- * Since PHPUnit 9.x, PHPUnit\Framework\TestCase::prophesize is marked as deprecated.
- * To work around this issue, you need to use \Prophecy\PhpUnit\ProphecyTrait.
- * However, this Trait is not supported under PHP 7.3.
- * Declare a dummy Trait to avoid problems in PREFER_LOWEST mode.
- */
-if (!trait_exists('\\Prophecy\\PhpUnit\\ProphecyTrait')) {
-    assert(
-        version_compare(phpversion(), '7.3.0') < 0,
-        'If using PHP 7.3 or higher, should install phpspec/prophecy-phpunit'
-    );
-    trait DoNothingTrait{}
-    class_alias(DoNothingTrait::class, '\\Prophecy\\PhpUnit\\ProphecyTrait');
-}
