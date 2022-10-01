@@ -70,6 +70,7 @@ final class ClientTest extends TestCase
     {
         Configure::delete('Sentry.dsn');
         $this->expectException(RuntimeException::class);
+        $this->expectExceptionMessage('Sentry DSN not provided.');
 
         new SentryClient([]);
     }
@@ -146,6 +147,28 @@ final class ClientTest extends TestCase
     }
 
     /**
+     * Test capture error
+     */
+    public function testCaptureError(): void
+    {
+        $subject = new SentryClient([]);
+        $sentryClientP = $this->prophesize(ClientInterface::class);
+        $subject->getHub()->bindClient($sentryClientP->reveal());
+
+        $error = new PhpError(E_USER_WARNING, 'something wrong.');
+        $subject->captureError($error);
+
+        $sentryClientP
+            ->captureMessage(
+                $error->getMessage(),
+                Argument::type(Severity::class),
+                Argument::type(Scope::class),
+                null
+            )
+            ->shouldHaveBeenCalledOnce();
+    }
+
+    /**
      * Test capture other than exception
      *
      * @return array // FIXME: In fact array<string,MethodProphecy[]>, but getMethodProphecies declare as MethodProphecy[]
@@ -178,9 +201,33 @@ final class ClientTest extends TestCase
     }
 
     /**
-     * Test capture pass cakephp-log's context as additional data
+     * Test capture exception pass cakephp-log's context as additional data
      */
-    public function testCaptureWithAdditionalData(): void
+    public function testCaptureExceptionWithAdditionalData(): void
+    {
+        $callback = function (\Sentry\Event $event, ?\Sentry\EventHint $hint) use (&$actualEvent) {
+            $actualEvent = $event;
+        };
+
+        $userConfig = [
+            'dsn' => false,
+            'before_send' => $callback,
+        ];
+
+        Configure::write('Sentry', $userConfig);
+        $subject = new SentryClient([]);
+
+        $extras = ['this is' => 'additional'];
+        $exception = new RuntimeException('Some error');
+        $subject->captureException($exception, null, $extras);
+
+        $this->assertSame($extras, $actualEvent->getExtra());
+    }
+
+    /**
+     * Test capture error pass cakephp-log's context as additional data
+     */
+    public function testCaptureErrorWithAdditionalData(): void
     {
         $callback = function (\Sentry\Event $event, ?\Sentry\EventHint $hint) use (&$actualEvent) {
             $actualEvent = $event;
@@ -202,9 +249,32 @@ final class ClientTest extends TestCase
     }
 
     /**
-     * Check capture dispatch beforeCapture
+     * Check capture dispatch before exception capture
      */
-    public function testCaptureDispatchBeforeCapture(): void
+    public function testCaptureDispatchBeforeExceptionCapture(): void
+    {
+        $subject = new SentryClient([]);
+        $sentryClientP = $this->prophesize(ClientInterface::class);
+        $subject->getHub()->bindClient($sentryClientP->reveal());
+
+        $called = false;
+        EventManager::instance()->on(
+            'CakeSentry.Client.beforeCapture',
+            function () use (&$called) {
+                $called = true;
+            }
+        );
+
+        $exception = new RuntimeException('Some error');
+        $subject->captureException($exception, null, ['exception' => new Exception()]);
+
+        $this->assertTrue($called);
+    }
+
+    /**
+     * Check capture dispatch before error capture
+     */
+    public function testCaptureDispatchBeforeErrorCapture(): void
     {
         $subject = new SentryClient([]);
         $sentryClientP = $this->prophesize(ClientInterface::class);
@@ -225,9 +295,9 @@ final class ClientTest extends TestCase
     }
 
     /**
-     * Check capture dispatch afterCapture and receives lastEventId
+     * Check capture dispatch after exception capture and receives lastEventId
      */
-    public function testCaptureDispatchAfterCapture(): void
+    public function testCaptureDispatchAfterExceptionCapture(): void
     {
         $lastEventId = EventId::generate();
 
@@ -249,6 +319,36 @@ final class ClientTest extends TestCase
 
         $phpError = new RuntimeException('Some error');
         $subject->captureException($phpError, null, ['exception' => new Exception()]);
+
+        $this->assertTrue($called);
+        $this->assertSame($lastEventId, $actualLastEventId);
+    }
+
+    /**
+     * Check capture dispatch after error capture and receives lastEventId
+     */
+    public function testCaptureDispatchAfterErrorCapture(): void
+    {
+        $lastEventId = EventId::generate();
+
+        $subject = new SentryClient([]);
+        $sentryClientP = $this->prophesize(ClientInterface::class);
+        $sentryClientP->captureMessage(Argument::cetera())
+            ->shouldBeCalledOnce()
+            ->willReturn($lastEventId);
+        $subject->getHub()->bindClient($sentryClientP->reveal());
+
+        $called = false;
+        EventManager::instance()->on(
+            'CakeSentry.Client.afterCapture',
+            function (Event $event) use (&$called, &$actualLastEventId) {
+                $called = true;
+                $actualLastEventId = $event->getData('lastEventId');
+            }
+        );
+
+        $phpError = new PhpError(E_USER_WARNING, 'Some error');
+        $subject->captureError($phpError, null, ['exception' => new Exception()]);
 
         $this->assertTrue($called);
         $this->assertSame($lastEventId, $actualLastEventId);
