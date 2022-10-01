@@ -247,8 +247,8 @@ final class ClientTest extends TestCase
             }
         );
 
-        $phpError = new PhpError(E_USER_WARNING, 'Some error');
-        $subject->captureError($phpError, null, ['exception' => new Exception()]);
+        $phpError = new RuntimeException('Some error');
+        $subject->captureException($phpError, null, ['exception' => new Exception()]);
 
         $this->assertTrue($called);
         $this->assertSame($lastEventId, $actualLastEventId);

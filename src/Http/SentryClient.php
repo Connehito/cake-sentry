@@ -24,8 +24,7 @@ class SentryClient
     use EventDispatcherTrait;
     use InstanceConfigTrait;
 
-    /* @var array default instance config */
-    protected $_defaultConfig = [
+    protected array $_defaultConfig = [
         'sentry' => [
             'prefixes' => [
                 APP,
