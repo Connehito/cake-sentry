@@ -16,7 +16,7 @@ CakePHP integration for Sentry.
 ## Installation
 ### With composer install.
 ```
-composer require connehito/cake-sentry
+composer require connehito/cake-sentry:"^2.0"
 ```
 
 ## Usage
