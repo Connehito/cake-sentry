@@ -1,4 +1,16 @@
-# CakePHP Sentry Plugin
+
+# [Repository Archived] CakePHP Sentry Plugin
+Use this [CakePHP Sentry Plugin](https://github.com/LordSimal/cakephp-sentry) if you want to use sentry with CakePHP 4.4+.
+
+This project has been archived and is no longer actively maintained.
+The project has been archived because several years have passed without active maintenance.
+
+We appreciate the support and contributions from the community over the years.
+While this repository will remain available in read-only mode, there will be no further updates or maintenance.
+Thank you for your understanding and support.
+
+----
+
 CakePHP integration for Sentry.
 
 [![Latest Stable Version](https://poser.pugx.org/connehito/cake-sentry/v/stable)](https://packagist.org/packages/connehito/cake-sentry)
