@@ -1,5 +1,5 @@
 
-# [Repository Archived] CakePHP Sentry Plugin
+# [Archived] CakePHP Sentry Plugin
 Use this [CakePHP Sentry Plugin](https://github.com/LordSimal/cakephp-sentry) if you want to use sentry with CakePHP 4.4+.
 
 This project has been archived and is no longer actively maintained because several years have passed without active maintenance.
